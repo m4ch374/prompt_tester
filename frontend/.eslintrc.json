@@ -10,7 +10,8 @@
     "next/core-web-vitals",
     "plugin:@typescript-eslint/recommended",
     "plugin:@typescript-eslint/recommended-requiring-type-checking",
-    "prettier"
+    "prettier",
+    "plugin:tailwindcss/recommended"
   ],
   "plugins": [
     "@typescript-eslint",
@@ -25,6 +26,7 @@
       "semi": false,
       "arrowParens": "avoid",
       "trailingComma": "all"
-    }]
+    }],
+    "tailwindcss/no-custom-classname": "off"
   }
 }
