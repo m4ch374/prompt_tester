@@ -1,10 +1,13 @@
 "use client"
 
+import { auth } from "@/services/auth.services"
 import { useSearchParams } from "next/navigation"
 import { useRouter } from "next/navigation"
 import React, { useEffect, useRef } from "react"
 
-const Callback: React.FC = () => {
+const Callback: React.FC<{
+  searchParams: { [key: string]: string | string[] | undefined }
+}> = () => {
   const code = useSearchParams().get("code")
   const abortRef = useRef<AbortController>()
   const router = useRouter()
@@ -19,24 +22,15 @@ const Callback: React.FC = () => {
       }
       abortRef.current = new AbortController()
       console.log("fetching")
-      const resp = await fetch(
-        `${process.env.NEXT_PUBLIC_BACKEND}/auth?access_code=${encodeURIComponent(code)}`,
-        {
-          method: "GET",
-          signal: abortRef.current.signal,
-        },
-      )
+      const resp = await auth(code, abortRef.current)
 
       if (!resp.ok) {
-        const err = (await resp.json()) as { detail: { reason: string } }
-        console.error(err.detail.reason)
+        console.error(resp.error)
         router.push("/auth")
         return
       }
 
-      const data = (await resp.json()) as { access_token: string }
-
-      console.log(data.access_token)
+      console.log(resp.data.access_token)
       router.push("/")
     })()
   }, [code, router])
