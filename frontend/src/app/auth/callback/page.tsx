@@ -1,16 +1,17 @@
 "use client"
 
 import { auth } from "@/services/auth.services"
+import useStorage from "@/utils/hooks/UseStorage.hook"
 import { useSearchParams } from "next/navigation"
 import { useRouter } from "next/navigation"
 import React, { useEffect, useRef } from "react"
+import toast from "react-hot-toast"
 
-const Callback: React.FC<{
-  searchParams: { [key: string]: string | string[] | undefined }
-}> = () => {
+const Callback: React.FC = () => {
   const code = useSearchParams().get("code")
   const abortRef = useRef<AbortController>()
   const router = useRouter()
+  const authKey = useStorage("auth_key")
 
   useEffect(() => {
     if (typeof code === "undefined" || code == null) return
@@ -25,15 +26,15 @@ const Callback: React.FC<{
       const resp = await auth(code, abortRef.current)
 
       if (!resp.ok) {
-        console.error(resp.error)
+        toast.error(resp.error)
         router.push("/auth")
         return
       }
 
-      console.log(resp.data.access_token)
+      authKey.setStorageItem(resp.data.access_token)
       router.push("/")
     })()
-  }, [code, router])
+  }, [authKey, code, router])
 
   return <h1>hi</h1>
 }
