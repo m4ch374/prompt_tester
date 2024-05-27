@@ -2,6 +2,9 @@
 
 from pydantic import BaseModel
 
+class AuthRequest(BaseModel):
+    access_code: str
+
 class AuthResponse(BaseModel):
     access_token: str
 

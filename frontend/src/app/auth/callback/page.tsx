@@ -1,13 +1,17 @@
 "use client"
 
+import { auth } from "@/services/auth.services"
+import useStorage from "@/utils/hooks/UseStorage.hook"
 import { useSearchParams } from "next/navigation"
 import { useRouter } from "next/navigation"
 import React, { useEffect, useRef } from "react"
+import toast from "react-hot-toast"
 
 const Callback: React.FC = () => {
   const code = useSearchParams().get("code")
   const abortRef = useRef<AbortController>()
   const router = useRouter()
+  const authKey = useStorage("auth_key")
 
   useEffect(() => {
     if (typeof code === "undefined" || code == null) return
@@ -19,27 +23,18 @@ const Callback: React.FC = () => {
       }
       abortRef.current = new AbortController()
       console.log("fetching")
-      const resp = await fetch(
-        `${process.env.NEXT_PUBLIC_BACKEND}/auth?access_code=${encodeURIComponent(code)}`,
-        {
-          method: "GET",
-          signal: abortRef.current.signal,
-        },
-      )
+      const resp = await auth(code, abortRef.current)
 
       if (!resp.ok) {
-        const err = (await resp.json()) as { detail: { reason: string } }
-        console.error(err.detail.reason)
+        toast.error(resp.error)
         router.push("/auth")
         return
       }
 
-      const data = (await resp.json()) as { access_token: string }
-
-      console.log(data.access_token)
+      authKey.setStorageItem(resp.data.access_token)
       router.push("/")
     })()
-  }, [code, router])
+  }, [authKey, code, router])
 
   return <h1>hi</h1>
 }

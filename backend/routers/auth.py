@@ -2,20 +2,20 @@ import requests
 import jwt
 from fastapi import APIRouter
 from backend.utils.helpers import get_dotenv
-from backend.models.auth import OAuthResponseBody, AuthResponse, IdTokenJwtPayload
+from backend.models.auth import OAuthResponseBody, AuthResponse, IdTokenJwtPayload, AuthRequest
 from backend.utils.exceptions import BadRequestException
 
 auth_router = APIRouter(prefix="/auth")
 
-@auth_router.get("/")
-def read_item(access_code: str) -> AuthResponse:
+@auth_router.post("/")
+def read_item(body: AuthRequest) -> AuthResponse:
     env_var = get_dotenv()
     resp = requests.post(
         url="https://oauth2.googleapis.com/token",
         data={
             "client_id": env_var["GOOGLE_CLIENT_ID"],
             "client_secret": env_var["GOOGLE_CLIENT_SECRET"],
-            "code": access_code,
+            "code": body.access_code,
             "grant_type": "authorization_code",
             "redirect_uri": "http://localhost:3000/auth/callback",
         },
@@ -39,4 +39,6 @@ def read_item(access_code: str) -> AuthResponse:
     # printing it out for now
     print(decoded.model_dump())
 
-    return { "access_token": data.access_token }
+    jwt_token = jwt.encode({ "token": data.access_token }, env_var["JWT_TOKEN_STR"])
+
+    return { "access_token": jwt_token }
