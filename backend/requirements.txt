@@ -1,2 +1,6 @@
 fastapi
 pylint
+requests
+python-dotenv
+pydantic
+pyjwt
