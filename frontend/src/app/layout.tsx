@@ -1,8 +1,8 @@
 import type { Metadata } from "next"
 import { Inter } from "next/font/google"
 import "./globals.css"
-import RouteProtector from "@/components/RouteProtector"
 import { Toaster } from "react-hot-toast"
+import PageProtector from "@/components/PageProtector"
 
 const inter = Inter({ subsets: ["latin"] })
 
@@ -19,10 +19,18 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={inter.className}>
-        <RouteProtector fallbackRoute="/auth">
+        <PageProtector>
           {children}
-          <Toaster />
-        </RouteProtector>
+          <Toaster
+            toastOptions={{
+              position: "bottom-center",
+              style: {
+                background: "#333",
+                color: "white",
+              },
+            }}
+          />
+        </PageProtector>
       </body>
     </html>
   )

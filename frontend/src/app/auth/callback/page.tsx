@@ -1,7 +1,7 @@
 "use client"
 
 import { auth } from "@/services/auth.services"
-import useStorage from "@/utils/hooks/UseStorage.hook"
+import { setCookie } from "@/utils/actions/cookies.action"
 import { useSearchParams } from "next/navigation"
 import { useRouter } from "next/navigation"
 import React, { useEffect, useRef } from "react"
@@ -11,7 +11,6 @@ const Callback: React.FC = () => {
   const code = useSearchParams().get("code")
   const abortRef = useRef<AbortController>()
   const router = useRouter()
-  const authKey = useStorage("auth_key")
 
   useEffect(() => {
     if (typeof code === "undefined" || code == null) return
@@ -31,10 +30,10 @@ const Callback: React.FC = () => {
         return
       }
 
-      authKey.setStorageItem(resp.data.access_token)
+      setCookie("auth_key", resp.data.access_token)
       router.push("/")
     })()
-  }, [authKey, code, router])
+  }, [code, router])
 
   return <h1>hi</h1>
 }
