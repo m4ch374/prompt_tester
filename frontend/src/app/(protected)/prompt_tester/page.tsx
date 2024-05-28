@@ -3,7 +3,7 @@ import React from "react"
 const PromptTester: React.FC = () => {
   return (
     <div>
-      <h1>hi</h1>
+      <h1>prompt tester</h1>
     </div>
   )
 }

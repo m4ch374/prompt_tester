@@ -39,6 +39,7 @@ def read_item(body: AuthRequest) -> AuthResponse:
     # printing it out for now
     print(decoded.model_dump())
 
-    jwt_token = jwt.encode({ "token": data.access_token }, env_var["JWT_TOKEN_STR"])
+    # this is cheesy
+    jwt_token = jwt.encode({ "token": data.id_token }, env_var["JWT_TOKEN_STR"])
 
     return { "access_token": jwt_token }
