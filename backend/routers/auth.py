@@ -7,7 +7,7 @@ from backend.utils.exceptions import BadRequestException
 
 auth_router = APIRouter(prefix="/auth")
 
-@auth_router.post("/")
+@auth_router.post("")
 def read_item(body: AuthRequest) -> AuthResponse:
     env_var = get_dotenv()
     resp = requests.post(
@@ -29,7 +29,7 @@ def read_item(body: AuthRequest) -> AuthResponse:
         raise BadRequestException("Please login with Google account again.")
 
     try:
-        # not verifying bc dont know the secret
+        # not verifying bc dont know the secret (probably google's public key)
         decoded = IdTokenJwtPayload(
             **jwt.decode(data.id_token, options={ "verify_signature": False })
         )

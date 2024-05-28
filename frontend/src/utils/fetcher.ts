@@ -3,7 +3,7 @@ import { TEndpoint } from "@/services/types"
 type Method = "GET" | "POST" | "PUT" | "DELETE"
 
 type ErrorResponse = {
-  details: { reason: string }
+  detail: { reason: string }
 }
 
 // Thy type any is very much needed in this case
@@ -92,10 +92,11 @@ class Fetcher<T extends TEndpoint<any, any>> {
     const res = await fetch(this.baseURL, this.requestConf)
     if (!res.ok) {
       const errObj = (await res.json()) as ErrorResponse
+      console.log(errObj)
       return {
         ok: false,
         data: null,
-        error: errObj.details.reason,
+        error: errObj.detail.reason || (errObj.detail as unknown as string),
       }
     }
 

@@ -8,6 +8,9 @@ class AuthRequest(BaseModel):
 class AuthResponse(BaseModel):
     access_token: str
 
+class JWTWrapper(BaseModel):
+    token: str
+
 class IdTokenJwtPayload(BaseModel):
     iss: str
     azp: str

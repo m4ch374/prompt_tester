@@ -12,13 +12,14 @@ const PageProtector: React.FC<{ children: React.ReactNode }> = ({
   const pathname = usePathname()
 
   useEffect(() => {
+    if (pathname === "/" || pathname.startsWith("/auth")) return
     ;(async () => {
-      // oh my god
+      // server action -1000IQ workaround
       const cookie_str = await (getCookie(
         "auth_key",
       ) as unknown as Promise<string>)
 
-      if (!pathname.startsWith("/auth") && cookie_str === "") {
+      if (cookie_str === "") {
         router.push("/auth")
       }
     })()

@@ -4,7 +4,6 @@ import { cookies } from "next/headers"
 
 export const getCookie = (field: string): string => {
   const cookieStore = cookies()
-  console.log(cookieStore.get(field)?.value)
   return cookieStore.get(field)?.value || ""
 }
 

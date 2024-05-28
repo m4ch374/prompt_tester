@@ -21,7 +21,15 @@ export default function RootLayout({
       <body className={inter.className}>
         <PageProtector>
           {children}
-          <Toaster />
+          <Toaster
+            toastOptions={{
+              position: "bottom-center",
+              style: {
+                background: "#333",
+                color: "white",
+              },
+            }}
+          />
         </PageProtector>
       </body>
     </html>
