@@ -8,11 +8,13 @@ import Adjust from "@/icons/Adjust"
 import Film from "@/icons/Film"
 import Bars3 from "@/icons/Bars3"
 import SideBarProfile from "./SideBarProfile"
+import hoverContext, { THover } from "./HoverContext"
 
 const SideBarWrapper: React.FC<{ children: React.ReactNode }> = ({
   children,
 }) => {
   const [collapsed, setCollapsed] = useState(false)
+  const hovers = useState<THover>({})
 
   return (
     <div className="flex h-screen w-full">
@@ -36,24 +38,26 @@ const SideBarWrapper: React.FC<{ children: React.ReactNode }> = ({
           </div>
           <hr className="mb-8 h-px w-4/5 place-self-center border-0 bg-gray-400/20" />
           <div className="grid px-2">
-            <SideBarBtn
-              icon={<Code />}
-              link="/prompt_tester"
-              title="Prompt Tester"
-              collapsed={collapsed}
-            />
-            <SideBarBtn
-              icon={<Adjust />}
-              link="/dashboard"
-              title="Dashboard"
-              collapsed={collapsed}
-            />
-            <SideBarBtn
-              icon={<Film />}
-              link="/campaign"
-              title="Campaign"
-              collapsed={collapsed}
-            />
+            <hoverContext.Provider value={hovers}>
+              <SideBarBtn
+                icon={<Code />}
+                link="/prompt_tester"
+                title="Prompt Tester"
+                collapsed={collapsed}
+              />
+              <SideBarBtn
+                icon={<Adjust />}
+                link="/dashboard"
+                title="Dashboard"
+                collapsed={collapsed}
+              />
+              <SideBarBtn
+                icon={<Film />}
+                link="/campaign"
+                title="Campaign"
+                collapsed={collapsed}
+              />
+            </hoverContext.Provider>
           </div>
         </div>
         <SideBarProfile collapsed={collapsed} />
