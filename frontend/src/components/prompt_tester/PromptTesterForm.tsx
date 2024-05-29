@@ -12,7 +12,7 @@ import React, {
 } from "react"
 import toast from "react-hot-toast"
 import { TMessage } from "@/services/types"
-import Conversations from "./Conversations"
+import Conversations from "./conversations/Conversations"
 import promptContext from "./PromptContext"
 import SystemTextBox from "./SystemTextBox"
 import ChatBox from "./chat_box/ChatBox"
