@@ -1,6 +1,5 @@
-"use client" // too lazy
+"use client"
 
-import Send from "@/icons/Send"
 import { generateChat } from "@/services/chat.services"
 import { getCookie } from "@/utils/actions/cookies.action"
 import React, {
@@ -12,8 +11,11 @@ import React, {
   useState,
 } from "react"
 import toast from "react-hot-toast"
-import ChatItem from "./ChatItem"
 import { TMessage } from "@/services/types"
+import Conversations from "./Conversations"
+import promptContext from "./PromptContext"
+import SystemTextBox from "./SystemTextBox"
+import ChatBox from "./chat_box/ChatBox"
 
 const PromptTesterForm: React.FC = () => {
   const textRef = useRef<HTMLTextAreaElement>(null)
@@ -42,7 +44,7 @@ const PromptTesterForm: React.FC = () => {
       responseContainerRef.current.scrollTop =
         responseContainerRef.current.scrollHeight
     }
-  }, [allChat])
+  }, [allChat, currResponse])
 
   const constructMessage: TMessage[] = useMemo(() => {
     const res: TMessage[] = [...allChat]
@@ -67,6 +69,9 @@ const PromptTesterForm: React.FC = () => {
         ) as unknown as Promise<string>)
         setResopnding(true)
         setAllChat(c => [...c, { role: "user", content: usrMsg }])
+
+        setUsrMsg("") // not sure if this will create recursion, will see
+
         const resp = await generateChat(token, {
           messages: constructMessage,
           stream: true,
@@ -110,62 +115,31 @@ const PromptTesterForm: React.FC = () => {
   )
 
   return (
-    <form className="flex size-full justify-stretch" onSubmit={formSubmit}>
-      <div className="flex flex-1 flex-col justify-between border-r border-zinc-500/40">
-        <div className="flex-1">
-          <h1>Conversations</h1>
-          <div>New conversation</div>
+    <promptContext.Provider
+      value={{
+        usrMsgController: [usrMsg, setUsrMsg],
+        sysMsgController: [sysMsg, setSysMsg],
+        allChat,
+        currResponse,
+        responding,
+      }}
+    >
+      <form className="flex size-full justify-stretch" onSubmit={formSubmit}>
+        <div className="flex flex-1 flex-col justify-between border-r border-zinc-500/40">
+          <Conversations />
+          <SystemTextBox />
         </div>
-        <div className="flex flex-1 flex-col border-t border-zinc-500/40 bg-black text-zinc-200 hover:bg-zinc-900">
-          <label className="m-2">System Message</label>
-          <textarea
-            className="flex-1 resize-none bg-transparent p-2 text-zinc-400 outline-none"
-            placeholder="Enter message"
-            value={sysMsg}
-            onChange={e => setSysMsg(e.target.value)}
+        <div className="flex flex-[2.5] flex-col justify-end border-r border-zinc-500/40">
+          <ChatBox
+            responseContainerRef={responseContainerRef}
+            textRef={textRef}
           />
         </div>
-      </div>
-      <div className="flex flex-[2.5] flex-col justify-end border-r border-zinc-500/40">
-        <div
-          className="grid items-end overflow-auto"
-          ref={responseContainerRef}
-        >
-          {allChat
-            .filter(s => s.role !== "system")
-            .map((s, i) => (
-              <ChatItem key={i} response={s} />
-            ))}
-          {responding && (
-            <ChatItem
-              response={{ role: "assistant", content: currResponse }}
-              responding={true}
-            />
-          )}
+        <div className="flex-1">
+          <h1 className="m-2">Settings</h1>
         </div>
-        <div className="flex flex-col">
-          <hr className="h-px border-0 bg-zinc-500/40" />
-          <div className="relative m-4 flex flex-col rounded-md border border-zinc-600 focus:border-zinc-400">
-            <textarea
-              ref={textRef}
-              className="size-full max-h-[15lh] resize-none rounded-[inherit] bg-transparent p-4 outline-none"
-              placeholder="Enter message"
-              value={usrMsg}
-              onChange={e => setUsrMsg(e.target.value)}
-            />
-            <button
-              type="submit"
-              className="absolute bottom-2 right-2 place-self-end rounded-md bg-purple-500 p-2"
-            >
-              <Send />
-            </button>
-          </div>
-        </div>
-      </div>
-      <div className="flex-1">
-        <h1 className="m-2">Settings</h1>
-      </div>
-    </form>
+      </form>
+    </promptContext.Provider>
   )
 }
 
