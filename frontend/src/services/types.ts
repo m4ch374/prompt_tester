@@ -12,3 +12,5 @@ type TGetProfileResponse = {
 }
 
 export type TGetProfile = TEndpoint<void, TGetProfileResponse>
+
+export type TGenerateChat = TEndpoint<void, Response>

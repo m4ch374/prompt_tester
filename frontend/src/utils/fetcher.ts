@@ -16,10 +16,14 @@ class Fetcher<T extends TEndpoint<any, any>> {
 
   private requestConf: RequestInit | undefined
 
+  private stream: boolean | undefined
+
   private constructor(method: Method, abortController?: AbortController) {
     this.requestConf = { method }
 
     this.requestConf.signal = abortController?.signal
+
+    this.stream = false
 
     if (method != "GET") {
       this.requestConf = {
@@ -73,6 +77,11 @@ class Fetcher<T extends TEndpoint<any, any>> {
     return this
   }
 
+  withStream() {
+    this.stream = true
+    return this
+  }
+
   // Add currently logged in user's token to request headers
   withCurrentToken() {
     return this.withToken(localStorage.getItem("token")!)
@@ -100,7 +109,7 @@ class Fetcher<T extends TEndpoint<any, any>> {
       }
     }
 
-    const resObj = (await res.json()) as T["responseType"]
+    const resObj = this.stream ? res : ((await res.json()) as T["responseType"])
     return {
       ok: true,
       data: resObj,

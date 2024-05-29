@@ -6,7 +6,9 @@ const PromptTester: React.FC = () => {
     <div className="flex size-full flex-col">
       <h1 className="my-4 ml-4 text-2xl font-thin">Prompt Tester</h1>
       <hr className="h-px border-0 bg-zinc-500/40" />
-      <PromptTesterForm />
+      <div className="h-full overflow-auto">
+        <PromptTesterForm />
+      </div>
     </div>
   )
 }

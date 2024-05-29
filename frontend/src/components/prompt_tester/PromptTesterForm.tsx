@@ -1,11 +1,25 @@
 "use client" // too lazy
 
 import Send from "@/icons/Send"
-import React, { useEffect, useRef, useState } from "react"
+import { generateChat } from "@/services/chat.services"
+import { getCookie } from "@/utils/actions/cookies.action"
+import React, {
+  FormEvent,
+  useCallback,
+  useEffect,
+  useRef,
+  useState,
+} from "react"
+import toast from "react-hot-toast"
+import ChatItem from "./ChatItem"
 
 const PromptTesterForm: React.FC = () => {
   const textRef = useRef<HTMLTextAreaElement>(null)
   const [textheight, setTextheight] = useState("")
+
+  const [currResponse, setCurrResponse] = useState("")
+
+  const dialogBoxRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
     if (!textRef.current) return
@@ -14,8 +28,42 @@ const PromptTesterForm: React.FC = () => {
     textRef.current.style.height = textRef.current.scrollHeight + 30 + "px"
   }, [textheight])
 
+  const formSubmit = useCallback((e: FormEvent) => {
+    e.preventDefault()
+    ;(async () => {
+      const token = await (getCookie("auth_key") as unknown as Promise<string>)
+      const resp = await generateChat(token)
+
+      if (!resp.ok) {
+        toast.error(resp.error)
+        return
+      }
+
+      // I died
+      const reader = resp.data.body?.getReader()
+      const decode = new TextDecoder("utf-8")
+      reader
+        ?.read()
+        .then(function readChunk(
+          res: ReadableStreamReadResult<Uint8Array>,
+        ): Promise<void> | void {
+          if (res.done) return
+          console.log(res.value)
+          setCurrResponse(s => s + decode.decode(res.value))
+          return reader.read().then(readChunk)
+        })
+        .catch(e => {
+          toast.error(e as string)
+        })
+    })()
+  }, [])
+
+  useEffect(() => {
+    console.log(dialogBoxRef.current?.clientHeight || 0)
+  }, [])
+
   return (
-    <form className="flex size-full justify-stretch">
+    <form className="flex size-full justify-stretch" onSubmit={formSubmit}>
       <div className="flex h-full flex-col border-r border-zinc-500/40 bg-black text-zinc-200 hover:bg-zinc-900">
         <label className="m-2">System Message</label>
         <textarea
@@ -24,8 +72,11 @@ const PromptTesterForm: React.FC = () => {
         />
       </div>
       <div className="flex flex-[2] flex-col justify-between border-r border-zinc-500/40">
-        <div className="bg-white"></div>
-        <div className="flex flex-col">
+        <div className="grid h-full items-end overflow-auto">
+          <ChatItem response={currResponse} />
+          {/* <ChatItem response={currResponse} /> */}
+        </div>
+        <div className="flex flex-col" ref={dialogBoxRef}>
           <hr className="h-px border-0 bg-zinc-500/40" />
           <div className="relative m-4 flex flex-col rounded-md border border-zinc-600 focus:border-zinc-400">
             <textarea
