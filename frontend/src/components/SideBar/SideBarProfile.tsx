@@ -3,22 +3,19 @@
 import { getProfile } from "@/services/profile.services"
 import { deleteCookie, getCookie } from "@/utils/actions/cookies.action"
 import { useRouter } from "next/navigation"
-import React, { useEffect, useRef, useState } from "react"
+import React, { useContext, useEffect, useRef, useState } from "react"
 import toast from "react-hot-toast"
 import Image from "next/image"
 import Logout from "@/icons/Logout"
 import { AnimatePresence, motion } from "framer-motion"
-
-type TProfile = {
-  name: string
-  img_link: string
-}
+import clientContext from "../ClientContext"
 
 const SideBarProfile: React.FC<{ collapsed: boolean }> = ({ collapsed }) => {
   const router = useRouter()
-  const [profile, setProfile] = useState<TProfile>()
   const [visible, setVisible] = useState(false)
   const logoutRef = useRef<HTMLButtonElement>(null)
+
+  const [profile, setProfile] = useContext(clientContext)
 
   useEffect(() => {
     ;(async () => {
@@ -33,10 +30,10 @@ const SideBarProfile: React.FC<{ collapsed: boolean }> = ({ collapsed }) => {
 
       setProfile({
         img_link: resp.data.profile_link,
-        name: resp.data.first_name + " " + resp.data.last_name,
+        name_str: resp.data.first_name + " " + resp.data.last_name,
       })
     })()
-  }, [router])
+  }, [router, setProfile])
 
   useEffect(() => {
     const handleClick = (e: MouseEvent) => {
@@ -82,7 +79,7 @@ const SideBarProfile: React.FC<{ collapsed: boolean }> = ({ collapsed }) => {
         <div
           className={`flex w-full items-center justify-center gap-2 ${!profile && "animate-pulse"}`}
         >
-          {profile ? (
+          {profile.name_str ? (
             <Image
               alt="profile pic"
               src={profile.img_link}
@@ -95,9 +92,9 @@ const SideBarProfile: React.FC<{ collapsed: boolean }> = ({ collapsed }) => {
           )}
           {!collapsed && (
             <div
-              className={`flex-1 ${!profile && "h-3 w-full rounded-full bg-slate-700"}`}
+              className={`flex-1 ${!profile.name_str && "h-3 w-full rounded-full bg-slate-700"}`}
             >
-              {profile?.name}
+              {profile.name_str}
             </div>
           )}
         </div>

@@ -128,9 +128,14 @@ const PromptTesterForm: React.FC = () => {
           {allChat
             .filter(s => s.role !== "system")
             .map((s, i) => (
-              <ChatItem key={i} response={s.content} />
+              <ChatItem key={i} response={s} />
             ))}
-          {responding && <ChatItem response={currResponse} responding={true} />}
+          {responding && (
+            <ChatItem
+              response={{ role: "assistant", content: currResponse }}
+              responding={true}
+            />
+          )}
         </div>
         <div className="flex flex-col">
           <hr className="h-px border-0 bg-zinc-500/40" />
