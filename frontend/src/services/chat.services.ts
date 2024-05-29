@@ -1,5 +1,5 @@
 import Fetcher from "@/utils/fetcher"
-import { TGenerateChat } from "./types"
+import { TGenerateChat, TGetChats } from "./types"
 
 export const generateChat = (
   token: string,
@@ -10,4 +10,8 @@ export const generateChat = (
     .withJsonPaylad(body)
     .withStream()
     .newFetchData()
+}
+
+export const getChats = (token: string) => {
+  return Fetcher.init<TGetChats>("GET", "/chat").withToken(token).newFetchData()
 }

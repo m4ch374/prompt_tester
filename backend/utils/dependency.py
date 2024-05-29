@@ -38,5 +38,4 @@ def verify_token(cred: Annotated[HTTPAuthorizationCredentials, Depends(HTTPBeare
             raise UnauthorizedException("error") # propergate downwards
     except Exception as e:
         raise UnauthorizedException("Session Expired: Please login again") from e
-
     return id_token

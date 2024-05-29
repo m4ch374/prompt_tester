@@ -1,4 +1,4 @@
-from typing import List, Literal, Optional
+from typing import Literal, Optional
 from pydantic import BaseModel, Field
 
 class MessageStruct(BaseModel):
@@ -6,7 +6,9 @@ class MessageStruct(BaseModel):
     content: str
 
 class GenerateChatRequest(BaseModel):
-    messages: List[MessageStruct]
+    conversation_id: int
+    system_message: MessageStruct
+    user_message: MessageStruct
     model: Optional[
         Literal["gemma-7b-it", "llama3-70b-8192", "llama3-8b-8192", "mixtral-8x7b-32768"]
     ] = Field(default="llama3-8b-8192")

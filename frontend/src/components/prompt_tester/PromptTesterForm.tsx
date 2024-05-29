@@ -6,7 +6,6 @@ import React, {
   FormEvent,
   useCallback,
   useEffect,
-  useMemo,
   useRef,
   useState,
 } from "react"
@@ -23,7 +22,6 @@ const PromptTesterForm: React.FC = () => {
   const [usrMsg, setUsrMsg] = useState("")
 
   const [sysMsg, setSysMsg] = useState("")
-  const [prevSys, setPrevSys] = useState("")
 
   const [allChat, setAllChat] = useState<TMessage[]>([])
 
@@ -31,6 +29,12 @@ const PromptTesterForm: React.FC = () => {
   const [currResponse, setCurrResponse] = useState("")
   const responseRef = useRef("")
   const responseContainerRef = useRef<HTMLDivElement>(null)
+
+  const [conversationId, setConversationId] = useState(-1)
+
+  useEffect(() => {
+    console.log(conversationId)
+  }, [conversationId])
 
   useEffect(() => {
     if (!textRef.current) return
@@ -45,17 +49,6 @@ const PromptTesterForm: React.FC = () => {
         responseContainerRef.current.scrollHeight
     }
   }, [allChat, currResponse])
-
-  const constructMessage: TMessage[] = useMemo(() => {
-    const res: TMessage[] = [...allChat]
-
-    if (sysMsg !== "" && sysMsg !== prevSys) {
-      res.push({ role: "system", content: sysMsg })
-    }
-
-    res.push({ role: "user", content: usrMsg })
-    return res
-  }, [allChat, prevSys, sysMsg, usrMsg])
 
   const formSubmit = useCallback(
     (e: FormEvent) => {
@@ -73,7 +66,9 @@ const PromptTesterForm: React.FC = () => {
         setUsrMsg("") // not sure if this will create recursion, will see
 
         const resp = await generateChat(token, {
-          messages: constructMessage,
+          conversation_id: -1,
+          system_message: { role: "system", content: sysMsg },
+          user_message: { role: "system", content: usrMsg },
           stream: true,
           seed: 1,
           model: "llama3-8b-8192",
@@ -86,9 +81,10 @@ const PromptTesterForm: React.FC = () => {
         }
 
         // I died
-        setPrevSys(sysMsg)
         const reader = resp.data.body?.getReader()
         const decode = new TextDecoder("utf-8")
+
+        let start = true
         reader
           ?.read()
           .then(function readChunk(
@@ -102,7 +98,18 @@ const PromptTesterForm: React.FC = () => {
               ])
               return
             }
-            responseRef.current += decode.decode(res.value)
+
+            if (start) {
+              decode
+                .decode(res.value)
+                .split("\n")
+                .slice(1)
+                .forEach(x => (responseRef.current += x))
+              setConversationId(parseInt(decode.decode(res.value)))
+              start = false
+            } else {
+              responseRef.current += decode.decode(res.value)
+            }
             setCurrResponse(responseRef.current)
             return reader.read().then(readChunk)
           })
@@ -111,7 +118,7 @@ const PromptTesterForm: React.FC = () => {
           })
       })()
     },
-    [constructMessage, responding, sysMsg, usrMsg],
+    [responding, sysMsg, usrMsg],
   )
 
   return (

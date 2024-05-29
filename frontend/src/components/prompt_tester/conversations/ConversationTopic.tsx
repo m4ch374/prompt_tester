@@ -10,8 +10,8 @@ const ConversationTopic: React.FC<{ topic?: string }> = ({
   const [hover, setHover] = useState(false)
 
   return (
-    <button
-      className="relative w-full text-start text-zinc-400 hover:text-zinc-200"
+    <div
+      className="relative w-full cursor-pointer text-start text-zinc-400 hover:text-zinc-200"
       onMouseEnter={() => setHover(true)}
       onMouseLeave={() => setHover(false)}
     >
@@ -24,13 +24,13 @@ const ConversationTopic: React.FC<{ topic?: string }> = ({
         >
           <div className="h-full w-1 rounded-r-md bg-purple-500" />
           <div className="flex h-full items-center justify-center rounded-l bg-red-500 px-2">
-            <button className="text-red-200">
+            <button className="text-red-200" type="button">
               <Trash />
             </button>
           </div>
         </motion.div>
       )}
-    </button>
+    </div>
   )
 }
 
