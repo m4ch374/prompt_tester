@@ -13,7 +13,9 @@ const ChatItem: React.FC<{ response: TMessage; responding?: boolean }> = ({
   const client = useContext(clientContext)[0]
 
   return (
-    <div className="w-full border-t border-zinc-500/40 p-2">
+    <div
+      className={`w-full border-t border-zinc-500/40 p-2 ${response.role === "assistant" && "bg-zinc-900"}`}
+    >
       <div className="flex items-center gap-2">
         {response.role === "assistant" ? (
           <Cube />
