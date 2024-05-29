@@ -14,6 +14,8 @@ def stream_chat(mychat):
         yield content or "\n"
 
 # to prevent cache
+# probably async would be better, but im not aware of the pitfalls
+# they libs also dont support async so im fine
 @chat_router.post("")
 def generate_chat(body: GenerateChatRequest, _: IdTokenJwtPayload = Depends(verify_token)):
     # new client instance per request...... I think thats ok

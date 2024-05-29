@@ -12,3 +12,8 @@ class BadRequestException(HTTPException):
 class UnauthorizedException(HTTPException):
     def __init__(self, reason: str, headers: Dict[str, str] | None = None) -> None:
         super().__init__(403, { "reason": reason }, headers)
+
+# Error 500
+class ServerErrorException(HTTPException):
+    def __init__(self, reason: str, headers: Dict[str, str] | None = None) -> None:
+        super().__init__(500, { "reason": reason }, headers)
