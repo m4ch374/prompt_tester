@@ -111,16 +111,22 @@ const PromptTesterForm: React.FC = () => {
 
   return (
     <form className="flex size-full justify-stretch" onSubmit={formSubmit}>
-      <div className="flex h-full flex-col border-r border-zinc-500/40 bg-black text-zinc-200 hover:bg-zinc-900">
-        <label className="m-2">System Message</label>
-        <textarea
-          className="flex-1 resize-none bg-transparent p-2 text-zinc-400 outline-none"
-          placeholder="Enter message"
-          value={sysMsg}
-          onChange={e => setSysMsg(e.target.value)}
-        />
+      <div className="flex flex-1 flex-col justify-between border-r border-zinc-500/40">
+        <div className="flex-1">
+          <h1>Conversations</h1>
+          <div>New conversation</div>
+        </div>
+        <div className="flex flex-1 flex-col border-t border-zinc-500/40 bg-black text-zinc-200 hover:bg-zinc-900">
+          <label className="m-2">System Message</label>
+          <textarea
+            className="flex-1 resize-none bg-transparent p-2 text-zinc-400 outline-none"
+            placeholder="Enter message"
+            value={sysMsg}
+            onChange={e => setSysMsg(e.target.value)}
+          />
+        </div>
       </div>
-      <div className="flex flex-[2] flex-col justify-end border-r border-zinc-500/40">
+      <div className="flex flex-[2.5] flex-col justify-end border-r border-zinc-500/40">
         <div
           className="grid items-end overflow-auto"
           ref={responseContainerRef}
