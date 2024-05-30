@@ -20,9 +20,7 @@ const Settings: React.FC = () => {
   return (
     <div className="mx-4">
       <h1 className="my-2 text-lg">Settings</h1>
-      <Tooltip tooltipText="The model which will generate the completion. Some models are suitable for natural language tasks, others specialize in code.">
-        <SelectInput />
-      </Tooltip>
+      <SelectInput />
       <Tooltip tooltipText="Controls randomness: lowering results in less random completions. As the temperature approaches zero, the model will become deterministic and repetitive.">
         <RangeInput
           title="Temperature"

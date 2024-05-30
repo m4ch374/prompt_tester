@@ -11,6 +11,7 @@ import promptContext from "../PromptContext"
 import Down from "@/icons/Down"
 import { TChatModel } from "@/services/types"
 import { AnimatePresence, motion } from "framer-motion"
+import Tooltip from "./Tooltip"
 
 const SelectInput: React.FC = () => {
   const [model, setModel] = useContext(promptContext).modelController
@@ -43,7 +44,9 @@ const SelectInput: React.FC = () => {
 
   return (
     <div className="mb-6">
-      <h1>Model</h1>
+      <Tooltip tooltipText="The model which will generate the completion. Some models are suitable for natural language tasks, others specialize in code.">
+        <h1>Model</h1>
+      </Tooltip>
       <div className="relative z-10 w-full" ref={containerRef}>
         <button
           type="button"
