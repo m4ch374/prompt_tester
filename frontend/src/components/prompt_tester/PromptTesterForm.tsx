@@ -24,6 +24,7 @@ const PromptTesterForm: React.FC = () => {
 
   const [sysMsg, setSysMsg] = useState("")
 
+  const [loadingConvo, setLoadingConvo] = useState(true)
   const [conversations, setConversations] = useState<TConversation[]>([])
   const [currConversation, setCurrConversation] = useState(-1)
 
@@ -34,22 +35,33 @@ const PromptTesterForm: React.FC = () => {
   const responseRef = useRef("")
   const responseContainerRef = useRef<HTMLDivElement>(null)
 
-  const [conversationId, setConversationId] = useState(-1)
+  useEffect(() => {
+    console.log(conversations)
+  }, [conversations])
 
   useEffect(() => {
-    if (currConversation === -1) return
+    if (loadingConvo) return
 
-    const currChat = conversations.filter(c => c.id === currConversation)[0]
+    if (currConversation != -1 || conversations.map(x => x.id).includes(-1))
+      return
+
+    console.log("added convo")
+    setConversations(s => [{ id: -1, messages: [] }, ...s])
+    setAllChat([])
+  }, [currConversation, conversations, loadingConvo])
+
+  useEffect(() => {
+    const filtered = conversations.filter(c => c.id === currConversation)
+
+    if (!filtered.length) return
+
+    const currChat = filtered[0]
     const lastUsedSysMsg = currChat.messages
       .filter(m => m.role === "system")
       .splice(-1)[0]?.content
     setAllChat(currChat.messages)
     setSysMsg(lastUsedSysMsg || "")
   }, [conversations, currConversation])
-
-  useEffect(() => {
-    console.log(conversationId)
-  }, [conversationId])
 
   useEffect(() => {
     if (!textRef.current) return
@@ -78,7 +90,7 @@ const PromptTesterForm: React.FC = () => {
         setResopnding(true)
         setAllChat(c => [...c, { role: "user", content: usrMsg }])
 
-        setUsrMsg("") // not sure if this will create recursion, will see
+        setUsrMsg("") // not sure if this will create recursion, we'll see
 
         const resp = await generateChat(token, {
           conversation_id: currConversation,
@@ -111,6 +123,21 @@ const PromptTesterForm: React.FC = () => {
                 ...c,
                 { role: "assistant", content: responseRef.current },
               ])
+              setConversations(s => {
+                const filtered = s.filter(c => c.id !== currConversation)
+                const itself = s.filter(c => c.id === currConversation)[0]
+
+                return [
+                  {
+                    id: currConversation,
+                    messages: [
+                      ...itself.messages,
+                      { role: "assistant", content: responseRef.current },
+                    ],
+                  },
+                  ...filtered,
+                ]
+              })
               return
             }
 
@@ -120,7 +147,22 @@ const PromptTesterForm: React.FC = () => {
                 .split("\n")
                 .slice(1)
                 .forEach(x => (responseRef.current += x))
-              setConversationId(parseInt(decode.decode(res.value)))
+
+              const conversationId = parseInt(decode.decode(res.value)) // not the best
+              setConversations(s => {
+                if (currConversation != -1) return s
+
+                const filtered = s.filter(c => c.id !== -1)
+
+                return [
+                  {
+                    id: conversationId,
+                    messages: [{ role: "user", content: usrMsg }],
+                  },
+                  ...filtered,
+                ]
+              })
+              setCurrConversation(conversationId)
               start = false
             } else {
               responseRef.current += decode.decode(res.value)
@@ -143,6 +185,7 @@ const PromptTesterForm: React.FC = () => {
         sysMsgController: [sysMsg, setSysMsg],
         conversationsController: [conversations, setConversations],
         currConversationController: [currConversation, setCurrConversation],
+        loadingConversation: [loadingConvo, setLoadingConvo],
         allChat,
         currResponse,
         responding,

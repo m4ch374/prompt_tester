@@ -10,6 +10,7 @@ const promptContext = createContext<{
     Dispatch<SetStateAction<TConversation[]>>,
   ]
   currConversationController: [number, Dispatch<SetStateAction<number>>]
+  loadingConversation: [boolean, Dispatch<SetStateAction<boolean>>]
   currResponse: string
   responding: boolean
 }>({
@@ -18,6 +19,7 @@ const promptContext = createContext<{
   allChat: [],
   conversationsController: [[], () => {}],
   currConversationController: [0, () => {}],
+  loadingConversation: [true, () => {}],
   currResponse: "",
   responding: false,
 })

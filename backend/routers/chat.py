@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends
 from fastapi.responses import StreamingResponse
 from groq import Groq
-from sqlalchemy import select, desc
+from sqlalchemy import select
 from sqlalchemy.orm import Session
 from backend.models.auth import IdTokenJwtPayload
 from backend.models.chat import GenerateChatRequest
@@ -86,7 +86,7 @@ def get_all_chats(
     try:
         stmt = (select(Conversation)
                 .where(Conversation.user_id == token_body.email)
-                .order_by(desc(Conversation.id)))
+                .order_by(Conversation.id))
         res = db.execute(stmt).scalars().all()
 
         conversations = []

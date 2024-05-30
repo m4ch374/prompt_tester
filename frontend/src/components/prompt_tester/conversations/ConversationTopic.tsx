@@ -11,7 +11,7 @@ const ConversationTopic: React.FC<{
 }> = ({ conversation }) => {
   const [hover, setHover] = useState(false)
   const conversationTopic = useMemo(() => {
-    if (!conversation.messages.length) return ""
+    if (!conversation.messages.length) return "New Conversation"
 
     return conversation.messages.filter(m => m.role === "user")[0].content
   }, [conversation.messages])
