@@ -1,34 +1,77 @@
-"use client" // too lazy
+"use client"
 
-import Send from "@/icons/Send"
 import { generateChat } from "@/services/chat.services"
 import { getCookie } from "@/utils/actions/cookies.action"
 import React, {
   FormEvent,
   useCallback,
   useEffect,
-  useMemo,
   useRef,
   useState,
 } from "react"
 import toast from "react-hot-toast"
-import ChatItem from "./ChatItem"
-import { TMessage } from "@/services/types"
+import { TConversation, TMessage } from "@/services/types"
+import Conversations from "./conversations/Conversations"
+import promptContext from "./PromptContext"
+import SystemTextBox from "./SystemTextBox"
+import ChatBox from "./chat_box/ChatBox"
 
+// This is a hot dumpster fire mess
 const PromptTesterForm: React.FC = () => {
   const textRef = useRef<HTMLTextAreaElement>(null)
 
   const [usrMsg, setUsrMsg] = useState("")
 
   const [sysMsg, setSysMsg] = useState("")
-  const [prevSys, setPrevSys] = useState("")
 
-  const [allChat, setAllChat] = useState<TMessage[]>([])
+  const [loadingConvo, setLoadingConvo] = useState(true)
+  const [conversations, setConversations] = useState<TConversation[]>([])
+  const [currConversation, setCurrConversation] = useState(-1)
 
   const [responding, setResopnding] = useState(false)
   const [currResponse, setCurrResponse] = useState("")
   const responseRef = useRef("")
   const responseContainerRef = useRef<HTMLDivElement>(null)
+
+  const setNewConvo = useCallback((cid: number, msg: TMessage) => {
+    setConversations(c => {
+      const itself = c.find(con => con.id === cid)
+
+      if (!itself) return c
+
+      const filtered = c.filter(con => con.id !== cid)
+      const res = [
+        { id: cid, messages: [...itself.messages, msg] },
+        ...filtered,
+      ]
+      return cid !== -1 ? res.sort((a, b) => b.id - a.id) : res
+    })
+  }, [])
+
+  useEffect(() => {
+    if (loadingConvo) return
+
+    if (conversations.map(x => x.id).includes(currConversation)) return
+
+    console.log(conversations.length)
+    if (!conversations.length || currConversation == -1) {
+      setConversations(s => [{ id: -1, messages: [] }, ...s])
+      setCurrConversation(-1)
+      return
+    }
+    setCurrConversation(Math.max(...conversations.map(x => x.id)))
+  }, [currConversation, conversations, loadingConvo, setNewConvo])
+
+  useEffect(() => {
+    const filtered = conversations.find(c => c.id === currConversation)
+
+    if (!filtered) return
+
+    const lastUsedSysMsg = filtered.messages
+      .filter(m => m.role === "system")
+      .splice(-1)[0]?.content
+    setSysMsg(lastUsedSysMsg || "")
+  }, [conversations, currConversation])
 
   useEffect(() => {
     if (!textRef.current) return
@@ -42,18 +85,7 @@ const PromptTesterForm: React.FC = () => {
       responseContainerRef.current.scrollTop =
         responseContainerRef.current.scrollHeight
     }
-  }, [allChat])
-
-  const constructMessage: TMessage[] = useMemo(() => {
-    const res: TMessage[] = [...allChat]
-
-    if (sysMsg !== "" && sysMsg !== prevSys) {
-      res.push({ role: "system", content: sysMsg })
-    }
-
-    res.push({ role: "user", content: usrMsg })
-    return res
-  }, [allChat, prevSys, sysMsg, usrMsg])
+  }, [currResponse, conversations, currConversation])
 
   const formSubmit = useCallback(
     (e: FormEvent) => {
@@ -66,9 +98,14 @@ const PromptTesterForm: React.FC = () => {
           "auth_key",
         ) as unknown as Promise<string>)
         setResopnding(true)
-        setAllChat(c => [...c, { role: "user", content: usrMsg }])
+
+        setNewConvo(currConversation, { role: "user", content: usrMsg })
+        setUsrMsg("") // not sure if this will create recursion, we'll see
+
         const resp = await generateChat(token, {
-          messages: constructMessage,
+          conversation_id: currConversation,
+          system_message: { role: "system", content: sysMsg },
+          user_message: { role: "user", content: usrMsg },
           stream: true,
           seed: 1,
           model: "llama3-8b-8192",
@@ -81,9 +118,12 @@ const PromptTesterForm: React.FC = () => {
         }
 
         // I died
-        setPrevSys(sysMsg)
         const reader = resp.data.body?.getReader()
         const decode = new TextDecoder("utf-8")
+
+        let nextId: number | null = null // to force a non-async op
+
+        let start = true
         reader
           ?.read()
           .then(function readChunk(
@@ -91,13 +131,42 @@ const PromptTesterForm: React.FC = () => {
           ): Promise<void> | void {
             if (res.done) {
               setResopnding(false)
-              setAllChat(c => [
-                ...c,
-                { role: "assistant", content: responseRef.current },
-              ])
+              setNewConvo(currConversation, {
+                role: "assistant",
+                content: responseRef.current,
+              })
+
+              if (nextId) {
+                setConversations(c => {
+                  const tmp = c.find(con => con.id === -1)
+                  const filtered = c.filter(con => con.id !== -1)
+
+                  return [
+                    {
+                      id: nextId,
+                      messages: [...(tmp?.messages || [])],
+                    },
+                    ...filtered,
+                  ] as TConversation[]
+                })
+                setCurrConversation(nextId)
+              }
               return
             }
-            responseRef.current += decode.decode(res.value)
+
+            if (start) {
+              decode
+                .decode(res.value)
+                .split("\n")
+                .slice(1)
+                .forEach(x => (responseRef.current += x))
+
+              const conversationId = parseInt(decode.decode(res.value)) // not the best
+              nextId = conversationId // Forcing a non async op
+              start = false
+            } else {
+              responseRef.current += decode.decode(res.value)
+            }
             setCurrResponse(responseRef.current)
             return reader.read().then(readChunk)
           })
@@ -106,60 +175,37 @@ const PromptTesterForm: React.FC = () => {
           })
       })()
     },
-    [constructMessage, responding, sysMsg, usrMsg],
+    [currConversation, responding, setNewConvo, sysMsg, usrMsg],
   )
 
   return (
-    <form className="flex size-full justify-stretch" onSubmit={formSubmit}>
-      <div className="flex h-full flex-col border-r border-zinc-500/40 bg-black text-zinc-200 hover:bg-zinc-900">
-        <label className="m-2">System Message</label>
-        <textarea
-          className="flex-1 resize-none bg-transparent p-2 text-zinc-400 outline-none"
-          placeholder="Enter message"
-          value={sysMsg}
-          onChange={e => setSysMsg(e.target.value)}
-        />
-      </div>
-      <div className="flex flex-[2] flex-col justify-end border-r border-zinc-500/40">
-        <div
-          className="grid items-end overflow-auto"
-          ref={responseContainerRef}
-        >
-          {allChat
-            .filter(s => s.role !== "system")
-            .map((s, i) => (
-              <ChatItem key={i} response={s} />
-            ))}
-          {responding && (
-            <ChatItem
-              response={{ role: "assistant", content: currResponse }}
-              responding={true}
-            />
-          )}
+    <promptContext.Provider
+      value={{
+        usrMsgController: [usrMsg, setUsrMsg],
+        sysMsgController: [sysMsg, setSysMsg],
+        conversationsController: [conversations, setConversations],
+        currConversationController: [currConversation, setCurrConversation],
+        loadingConversation: [loadingConvo, setLoadingConvo],
+        currResponse,
+        responding,
+      }}
+    >
+      <form className="flex size-full justify-stretch" onSubmit={formSubmit}>
+        <div className="flex flex-1 flex-col justify-between border-r border-zinc-500/40">
+          <Conversations />
+          <SystemTextBox />
         </div>
-        <div className="flex flex-col">
-          <hr className="h-px border-0 bg-zinc-500/40" />
-          <div className="relative m-4 flex flex-col rounded-md border border-zinc-600 focus:border-zinc-400">
-            <textarea
-              ref={textRef}
-              className="size-full max-h-[15lh] resize-none rounded-[inherit] bg-transparent p-4 outline-none"
-              placeholder="Enter message"
-              value={usrMsg}
-              onChange={e => setUsrMsg(e.target.value)}
-            />
-            <button
-              type="submit"
-              className="absolute bottom-2 right-2 place-self-end rounded-md bg-purple-500 p-2"
-            >
-              <Send />
-            </button>
-          </div>
+        <div className="flex flex-[2.5] flex-col justify-end border-r border-zinc-500/40">
+          <ChatBox
+            responseContainerRef={responseContainerRef}
+            textRef={textRef}
+          />
         </div>
-      </div>
-      <div className="flex-1">
-        <h1 className="m-2">Settings</h1>
-      </div>
-    </form>
+        <div className="flex-1">
+          <h1 className="m-2">Settings</h1>
+        </div>
+      </form>
+    </promptContext.Provider>
   )
 }
 

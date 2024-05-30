@@ -98,22 +98,32 @@ class Fetcher<T extends TEndpoint<any, any>> {
     data: T["responseType"]
     error: string
   }> {
-    const res = await fetch(this.baseURL, this.requestConf)
-    if (!res.ok) {
-      const errObj = (await res.json()) as ErrorResponse
-      console.log(errObj)
+    try {
+      const res = await fetch(this.baseURL, this.requestConf)
+      if (!res.ok) {
+        const errObj = (await res.json()) as ErrorResponse
+        console.log(errObj)
+        return {
+          ok: false,
+          data: null,
+          error: errObj.detail.reason || (errObj.detail as unknown as string),
+        }
+      }
+
+      const resObj = this.stream
+        ? res
+        : ((await res.json()) as T["responseType"])
+      return {
+        ok: true,
+        data: resObj,
+        error: "",
+      }
+    } catch (e) {
       return {
         ok: false,
         data: null,
-        error: errObj.detail.reason || (errObj.detail as unknown as string),
+        error: e as string,
       }
-    }
-
-    const resObj = this.stream ? res : ((await res.json()) as T["responseType"])
-    return {
-      ok: true,
-      data: resObj,
-      error: "",
     }
   }
 }

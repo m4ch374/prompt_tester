@@ -19,7 +19,9 @@ export type TMessage = {
 }
 
 export type TGenerateChatRequest = {
-  messages: TMessage[]
+  conversation_id: number
+  system_message: TMessage
+  user_message: TMessage
   model?:
     | "gemma-7b-it"
     | "llama3-70b-8192"
@@ -33,3 +35,16 @@ export type TGenerateChatRequest = {
 }
 
 export type TGenerateChat = TEndpoint<TGenerateChatRequest, Response>
+
+export type TConversation = {
+  id: number
+  messages: TMessage[]
+}
+
+type TGetChatsResponse = {
+  conversations: TConversation[]
+}
+
+export type TGetChats = TEndpoint<void, TGetChatsResponse>
+
+export type TRemoveChat = TEndpoint<{ conversation_id: number }, void>

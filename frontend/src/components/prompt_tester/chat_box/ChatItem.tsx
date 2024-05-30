@@ -3,7 +3,7 @@
 import Cube from "@/icons/Cube"
 import { TMessage } from "@/services/types"
 import React, { useContext } from "react"
-import clientContext from "../ClientContext"
+import clientContext from "../../ClientContext"
 import Image from "next/image"
 
 const ChatItem: React.FC<{ response: TMessage; responding?: boolean }> = ({
