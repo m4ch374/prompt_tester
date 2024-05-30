@@ -1,10 +1,9 @@
-import { TConversation, TMessage } from "@/services/types"
+import { TConversation } from "@/services/types"
 import { Dispatch, SetStateAction, createContext } from "react"
 
 const promptContext = createContext<{
   sysMsgController: [string, Dispatch<SetStateAction<string>>]
   usrMsgController: [string, Dispatch<SetStateAction<string>>]
-  allChat: TMessage[]
   conversationsController: [
     TConversation[],
     Dispatch<SetStateAction<TConversation[]>>,
@@ -16,7 +15,6 @@ const promptContext = createContext<{
 }>({
   sysMsgController: ["", () => {}],
   usrMsgController: ["", () => {}],
-  allChat: [],
   conversationsController: [[], () => {}],
   currConversationController: [0, () => {}],
   loadingConversation: [true, () => {}],

@@ -1,19 +1,28 @@
 "use client"
 
-import React, { LegacyRef, useContext } from "react"
+import React, { LegacyRef, useContext, useMemo } from "react"
 import promptContext from "../PromptContext"
 import ChatItem from "./ChatItem"
 import Send from "@/icons/Send"
+import { TMessage } from "@/services/types"
 
 const ChatBox: React.FC<{
   responseContainerRef: LegacyRef<HTMLDivElement>
   textRef: LegacyRef<HTMLTextAreaElement>
 }> = ({ responseContainerRef, textRef }) => {
   const promptCtx = useContext(promptContext)
-  const allChat = promptCtx.allChat
   const responding = promptCtx.responding
   const currResponse = promptCtx.currResponse
   const [usrMsg, setUsrMsg] = promptCtx.usrMsgController
+
+  const currChatId = promptCtx.currConversationController[0]
+  const conversations = promptCtx.conversationsController[0]
+  const allChat: TMessage[] = useMemo(() => {
+    return (
+      conversations.find(c => c.id === currChatId)?.messages ||
+      ([] as TMessage[])
+    )
+  }, [conversations, currChatId])
 
   return (
     <>
