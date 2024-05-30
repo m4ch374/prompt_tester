@@ -14,13 +14,19 @@ const ConversationTopic: React.FC<{
   const conversationTopic = useMemo(() => {
     if (!conversation.messages.length) return "New Conversation"
 
-    return conversation.messages.filter(m => m.role === "user")[0].content
+    return (
+      conversation.messages.filter(m => m.role === "user")[0]?.content || ""
+    )
   }, [conversation.messages])
 
-  const [currConvo, setCurrConvo] =
-    useContext(promptContext).currConversationController
+  const { conversationsController, currConversationController } =
+    useContext(promptContext)
 
-  const { addKey, isSelfHover } = useContext(hoverContext)
+  const [currConvo, setCurrConvo] = currConversationController
+
+  const setConversations = conversationsController[1]
+
+  const { addKey, isSelfHover, removeKey } = useContext(hoverContext)
 
   useEffect(() => {
     addKey(
@@ -53,7 +59,16 @@ const ConversationTopic: React.FC<{
         >
           <div className="h-full w-1 rounded-r-md bg-purple-500" />
           <div className="flex h-full items-center justify-center rounded-l bg-red-500 px-2">
-            <button className="text-red-200" type="button">
+            <button
+              className="text-red-200"
+              type="button"
+              onClick={() => {
+                setConversations(c =>
+                  c.filter(con => con.id !== conversation.id),
+                )
+                removeKey(conversation.id.toString())
+              }}
+            >
               <Trash />
             </button>
           </div>

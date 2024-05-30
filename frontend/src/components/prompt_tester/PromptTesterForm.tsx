@@ -33,19 +33,34 @@ const PromptTesterForm: React.FC = () => {
   const responseRef = useRef("")
   const responseContainerRef = useRef<HTMLDivElement>(null)
 
-  useEffect(() => {
-    console.log(conversations)
-  }, [conversations])
+  const setNewConvo = useCallback((cid: number, msg: TMessage) => {
+    setConversations(c => {
+      const itself = c.find(con => con.id === cid)
+
+      if (!itself) return c
+
+      const filtered = c.filter(con => con.id !== cid)
+      const res = [
+        { id: cid, messages: [...itself.messages, msg] },
+        ...filtered,
+      ]
+      return cid !== -1 ? res.sort((a, b) => b.id - a.id) : res
+    })
+  }, [])
 
   useEffect(() => {
     if (loadingConvo) return
 
-    if (currConversation != -1 || conversations.map(x => x.id).includes(-1))
-      return
+    if (conversations.map(x => x.id).includes(currConversation)) return
 
-    console.log("added convo")
-    setConversations(s => [{ id: -1, messages: [] }, ...s])
-  }, [currConversation, conversations, loadingConvo])
+    console.log(conversations.length)
+    if (!conversations.length) {
+      setConversations(() => [{ id: -1, messages: [] }])
+      setCurrConversation(-1)
+      return
+    }
+    setCurrConversation(Math.max(...conversations.map(x => x.id)))
+  }, [currConversation, conversations, loadingConvo, setNewConvo])
 
   useEffect(() => {
     const filtered = conversations.find(c => c.id === currConversation)
@@ -71,21 +86,6 @@ const PromptTesterForm: React.FC = () => {
         responseContainerRef.current.scrollHeight
     }
   }, [currResponse, conversations])
-
-  const setNewConvo = useCallback((cid: number, msg: TMessage) => {
-    setConversations(c => {
-      const itself = c.find(con => con.id === cid)
-
-      if (!itself) return c
-
-      const filtered = c.filter(con => con.id !== cid)
-      const res = [
-        { id: cid, messages: [...itself.messages, msg] },
-        ...filtered,
-      ]
-      return cid !== -1 ? res.sort((a, b) => b.id - a.id) : res
-    })
-  }, [])
 
   const formSubmit = useCallback(
     (e: FormEvent) => {
