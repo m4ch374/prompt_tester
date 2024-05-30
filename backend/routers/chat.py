@@ -42,12 +42,14 @@ def generate_chat( # pylint: disable=too-many-locals
         new_messages = [body.system_message] if use_provided_sys_msg else []
         new_messages.append(body.user_message)
 
+        print(body.model_dump())
         # new client instance per request...... I think thats ok
         client = Groq(api_key=env_var["GROQ_KEY"])
         mychat = client.chat.completions.create(
             messages=[m.to_json() for m in original_messages] + new_messages,
             model=body.model,
-            stream=True,
+            seed=body.seed,
+            stream=body.stream,
         )
 
         response = [c.choices[0].delta.content or "\n" for c in mychat] # pylint: disable=not-an-iterable
