@@ -114,8 +114,11 @@ const PromptTesterForm: React.FC = () => {
           system_message: { role: "system", content: sysMsg },
           user_message: { role: "user", content: usrMsg },
           stream: true,
-          seed: 1,
-          model: "llama3-8b-8192",
+          seed: seedController[0],
+          model: modelController[0],
+          max_tokens: maxTokenController[0],
+          temperature: temperatureController[0],
+          top_p: topPController[0],
         })
 
         if (!resp.ok) {
@@ -182,7 +185,18 @@ const PromptTesterForm: React.FC = () => {
           })
       })()
     },
-    [currConversation, responding, setNewConvo, sysMsg, usrMsg],
+    [
+      currConversation,
+      maxTokenController,
+      modelController,
+      responding,
+      seedController,
+      setNewConvo,
+      sysMsg,
+      temperatureController,
+      topPController,
+      usrMsg,
+    ],
   )
 
   return (
