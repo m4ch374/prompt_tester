@@ -1,21 +1,32 @@
 "use client"
 
 import Trash from "@/icons/Trash"
-import React, { useState } from "react"
+import React, { useContext, useMemo, useState } from "react"
 import { motion } from "framer-motion"
+import { TConversation } from "@/services/types"
+import promptContext from "../PromptContext"
 
-const ConversationTopic: React.FC<{ topic?: string }> = ({
-  topic = "New Chat",
-}) => {
+const ConversationTopic: React.FC<{
+  conversation: TConversation
+}> = ({ conversation }) => {
   const [hover, setHover] = useState(false)
+  const conversationTopic = useMemo(() => {
+    if (!conversation.messages.length) return ""
+
+    return conversation.messages.filter(m => m.role === "user")[0].content
+  }, [conversation.messages])
+
+  const conversationPicker =
+    useContext(promptContext).currConversationController[1]
 
   return (
     <div
       className="relative w-full cursor-pointer text-start text-zinc-400 hover:text-zinc-200"
       onMouseEnter={() => setHover(true)}
       onMouseLeave={() => setHover(false)}
+      onClick={() => conversationPicker(conversation.id)}
     >
-      <h1 className="line-clamp-1 p-1.5 text-lg">{topic}</h1>
+      <h1 className="line-clamp-1 p-1.5 text-lg">{conversationTopic}</h1>
 
       {hover && (
         <motion.div

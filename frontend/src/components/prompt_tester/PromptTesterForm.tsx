@@ -10,18 +10,22 @@ import React, {
   useState,
 } from "react"
 import toast from "react-hot-toast"
-import { TMessage } from "@/services/types"
+import { TConversation, TMessage } from "@/services/types"
 import Conversations from "./conversations/Conversations"
 import promptContext from "./PromptContext"
 import SystemTextBox from "./SystemTextBox"
 import ChatBox from "./chat_box/ChatBox"
 
+// This is a hot dumpster fire mess
 const PromptTesterForm: React.FC = () => {
   const textRef = useRef<HTMLTextAreaElement>(null)
 
   const [usrMsg, setUsrMsg] = useState("")
 
   const [sysMsg, setSysMsg] = useState("")
+
+  const [conversations, setConversations] = useState<TConversation[]>([])
+  const [currConversation, setCurrConversation] = useState(-1)
 
   const [allChat, setAllChat] = useState<TMessage[]>([])
 
@@ -31,6 +35,17 @@ const PromptTesterForm: React.FC = () => {
   const responseContainerRef = useRef<HTMLDivElement>(null)
 
   const [conversationId, setConversationId] = useState(-1)
+
+  useEffect(() => {
+    if (currConversation === -1) return
+
+    const currChat = conversations.filter(c => c.id === currConversation)[0]
+    const lastUsedSysMsg = currChat.messages
+      .filter(m => m.role === "system")
+      .splice(-1)[0]?.content
+    setAllChat(currChat.messages)
+    setSysMsg(lastUsedSysMsg || "")
+  }, [conversations, currConversation])
 
   useEffect(() => {
     console.log(conversationId)
@@ -66,9 +81,9 @@ const PromptTesterForm: React.FC = () => {
         setUsrMsg("") // not sure if this will create recursion, will see
 
         const resp = await generateChat(token, {
-          conversation_id: -1,
+          conversation_id: currConversation,
           system_message: { role: "system", content: sysMsg },
-          user_message: { role: "system", content: usrMsg },
+          user_message: { role: "user", content: usrMsg },
           stream: true,
           seed: 1,
           model: "llama3-8b-8192",
@@ -118,7 +133,7 @@ const PromptTesterForm: React.FC = () => {
           })
       })()
     },
-    [responding, sysMsg, usrMsg],
+    [currConversation, responding, sysMsg, usrMsg],
   )
 
   return (
@@ -126,6 +141,8 @@ const PromptTesterForm: React.FC = () => {
       value={{
         usrMsgController: [usrMsg, setUsrMsg],
         sysMsgController: [sysMsg, setSysMsg],
+        conversationsController: [conversations, setConversations],
+        currConversationController: [currConversation, setCurrConversation],
         allChat,
         currResponse,
         responding,

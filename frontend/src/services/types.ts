@@ -36,4 +36,13 @@ export type TGenerateChatRequest = {
 
 export type TGenerateChat = TEndpoint<TGenerateChatRequest, Response>
 
-export type TGetChats = TEndpoint<void, void>
+export type TConversation = {
+  id: number
+  messages: TMessage[]
+}
+
+type TGetChatsResponse = {
+  conversations: TConversation[]
+}
+
+export type TGetChats = TEndpoint<void, TGetChatsResponse>

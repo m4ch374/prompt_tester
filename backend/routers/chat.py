@@ -1,11 +1,11 @@
 from fastapi import APIRouter, Depends
 from fastapi.responses import StreamingResponse
 from groq import Groq
-from sqlalchemy import select
+from sqlalchemy import select, desc
 from sqlalchemy.orm import Session
 from backend.models.auth import IdTokenJwtPayload
 from backend.models.chat import GenerateChatRequest
-from backend.models.database import User, Conversation, Messages
+from backend.models.database import Conversation, Messages
 from backend.utils.dependency import verify_token, get_db
 from backend.utils.helpers import get_dotenv
 from backend.utils.exceptions import ServerErrorException
@@ -18,7 +18,7 @@ def stream_chat(mychat):
 # to prevent cache
 # probably async would be better, but im not aware of the pitfalls
 @chat_router.post("")
-def generate_chat(
+def generate_chat( # pylint: disable=too-many-locals
     body: GenerateChatRequest,
     token: IdTokenJwtPayload = Depends(verify_token),
     db: Session = Depends(get_db),
@@ -26,16 +26,26 @@ def generate_chat(
     env_var = get_dotenv()
 
     try:
+        original_messages = []
         if body.conversation_id != -1:
-            raise ServerErrorException("no")
+            msg_query = (select(Messages)
+                         .where(Messages.conversation_id == body.conversation_id)
+                         .order_by(Messages.id))
+            original_messages = db.execute(msg_query).scalars().all()
+
+        original_sys_msg = [m for m in original_messages if m.role == "system"]
+        use_provided_sys_msg = (
+            len(original_sys_msg) and
+            body.system_message.content !=
+            original_sys_msg[-1].content
+        )
+        new_messages = [body.system_message] if use_provided_sys_msg else []
+        new_messages.append(body.user_message)
 
         # new client instance per request...... I think thats ok
         client = Groq(api_key=env_var["GROQ_KEY"])
-
-        new_messages = [body.system_message, body.user_message]
-
         mychat = client.chat.completions.create(
-            messages=new_messages,
+            messages=[m.to_json() for m in original_messages] + new_messages,
             model=body.model,
             stream=True,
         )
@@ -45,11 +55,21 @@ def generate_chat(
         msg_item = [Messages(role=m.role, content=m.content) for m in new_messages]
         msg_item.append(Messages(role="assistant", content="".join(response)))
 
-        res = Conversation(messages=msg_item, user_id=token.email)
-        db.add(res)
+        if body.conversation_id == -1:
+            res = Conversation(user_id=token.email)
+            res.messages = msg_item
+            db.add(res)
+            db.flush()
+
+            response = [str(res.id)] + response
+        else:
+            for m in msg_item:
+                m.conversation_id = body.conversation_id
+            db.add_all(msg_item)
+
         db.commit()
         return StreamingResponse(
-            stream_chat([str(res.id)] + response),
+            stream_chat(response),
             media_type="text/event-stream",
         )
     except Exception as e:
@@ -64,15 +84,21 @@ def get_all_chats(
     db: Session = Depends(get_db),
 ):
     try:
-        stmt = select(User).where(User.email == token_body.email)
-        res = db.execute(stmt).scalar()
+        stmt = (select(Conversation)
+                .where(Conversation.user_id == token_body.email)
+                .order_by(desc(Conversation.id)))
+        res = db.execute(stmt).scalars().all()
 
-        print("Conversations:")
-        print(res.conversations)
+        conversations = []
+        for r in res:
+            conversations.append({
+                "id": r.id,
+                "messages": [{ "role": m.role, "content": m.content } for m in r.messages]
+            })
+
+        return { "conversations": conversations }
     except Exception as e:
         print(e)
         raise ServerErrorException("Error with database") from e
     finally:
         db.close()
-
-    return { "Hello": "world" }

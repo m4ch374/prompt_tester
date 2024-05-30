@@ -13,9 +13,9 @@ from .helpers import get_dotenv
 # hmm... probably not the best place to put it
 engine = create_engine(get_dotenv()["DB_URL"])
 SessionLocal = sessionmaker(bind=engine)
+Base.metadata.create_all(bind=engine)
 
 def get_db():
-    Base.metadata.create_all(bind=engine)
     db = SessionLocal()
     try:
         yield db

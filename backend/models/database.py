@@ -15,6 +15,12 @@ class Messages(Base):
     conversation_id: Mapped[int] = mapped_column(ForeignKey("conversations.id"))
     conversation: Mapped["Conversation"] = relationship(back_populates="messages")
 
+    def __repr__(self) -> str:
+        return f"role: {self.role} | content: {self.content}"
+
+    def to_json(self):
+        return { "role": self.role, "content": self.content }
+
 class Conversation(Base):
     __tablename__ = "conversations"
 
@@ -31,6 +37,12 @@ class Conversation(Base):
 
     user_id: Mapped[str] = mapped_column(ForeignKey("users.email"))
     user: Mapped["User"] = relationship(back_populates="conversations")
+
+    def __repr__(self) -> str:
+        return "\n".join(str(m) for m in self.messages)
+
+    def get_msg_json(self):
+        return [m.to_json() for m in self.messages]
 
 class User(Base):
     __tablename__ = "users"
