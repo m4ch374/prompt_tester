@@ -10,11 +10,12 @@ import React, {
   useState,
 } from "react"
 import toast from "react-hot-toast"
-import { TConversation, TMessage } from "@/services/types"
+import { TChatModel, TConversation, TMessage } from "@/services/types"
 import Conversations from "./conversations/Conversations"
 import promptContext from "./PromptContext"
 import SystemTextBox from "./SystemTextBox"
 import ChatBox from "./chat_box/ChatBox"
+import Settings from "./settings/Settings"
 
 // This is a hot dumpster fire mess
 const PromptTesterForm: React.FC = () => {
@@ -32,6 +33,12 @@ const PromptTesterForm: React.FC = () => {
   const [currResponse, setCurrResponse] = useState("")
   const responseRef = useRef("")
   const responseContainerRef = useRef<HTMLDivElement>(null)
+
+  const temperatureController = useState(1)
+  const maxTokenController = useState(1024)
+  const topPController = useState(1)
+  const modelController = useState<TChatModel>("llama3-8b-8192")
+  const seedController = useState<number>()
 
   const setNewConvo = useCallback((cid: number, msg: TMessage) => {
     setConversations(c => {
@@ -188,6 +195,11 @@ const PromptTesterForm: React.FC = () => {
         loadingConversation: [loadingConvo, setLoadingConvo],
         currResponse,
         responding,
+        temperatureController,
+        maxTokenController,
+        topPController,
+        modelController,
+        seedController,
       }}
     >
       <form className="flex size-full justify-stretch" onSubmit={formSubmit}>
@@ -202,7 +214,7 @@ const PromptTesterForm: React.FC = () => {
           />
         </div>
         <div className="flex-1">
-          <h1 className="m-2">Settings</h1>
+          <Settings />
         </div>
       </form>
     </promptContext.Provider>

@@ -18,15 +18,17 @@ export type TMessage = {
   content: string
 }
 
+export type TChatModel =
+  | "gemma-7b-it"
+  | "llama3-70b-8192"
+  | "llama3-8b-8192"
+  | "mixtral-8x7b-32768"
+
 export type TGenerateChatRequest = {
   conversation_id: number
   system_message: TMessage
   user_message: TMessage
-  model?:
-    | "gemma-7b-it"
-    | "llama3-70b-8192"
-    | "llama3-8b-8192"
-    | "mixtral-8x7b-32768"
+  model?: TChatModel
   temperature?: number
   max_tokens?: number
   top_p?: number
