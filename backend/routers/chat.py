@@ -1,10 +1,10 @@
 from fastapi import APIRouter, Depends
 from fastapi.responses import StreamingResponse
 from groq import Groq
-from sqlalchemy import select
+from sqlalchemy import select, delete
 from sqlalchemy.orm import Session
 from backend.models.auth import IdTokenJwtPayload
-from backend.models.chat import GenerateChatRequest
+from backend.models.chat import GenerateChatRequest, DeleteConversationRequest
 from backend.models.database import Conversation, Messages
 from backend.utils.dependency import verify_token, get_db
 from backend.utils.helpers import get_dotenv
@@ -97,6 +97,26 @@ def get_all_chats(
             })
 
         return { "conversations": conversations }
+    except Exception as e:
+        print(e)
+        raise ServerErrorException("Error with database") from e
+    finally:
+        db.close()
+
+@chat_router.delete("")
+def delete_conversation(
+    body: DeleteConversationRequest,
+    db: Session = Depends(get_db),
+    _: IdTokenJwtPayload = Depends(verify_token),
+):
+    try:
+        # forgot cascade delete exists
+        del_msg = delete(Messages).where(Messages.conversation_id == body.conversation_id)
+        del_convo = delete(Conversation).where(Conversation.id == body.conversation_id)
+        db.execute(del_msg)
+        db.execute(del_convo)
+        db.commit()
+        return {}
     except Exception as e:
         print(e)
         raise ServerErrorException("Error with database") from e

@@ -6,6 +6,9 @@ import { motion } from "framer-motion"
 import { TConversation } from "@/services/types"
 import promptContext from "../PromptContext"
 import hoverContext from "@/components/HoverContext"
+import { removeChat } from "@/services/chat.services"
+import { getCookie } from "@/utils/actions/cookies.action"
+import toast from "react-hot-toast"
 
 const ConversationTopic: React.FC<{
   conversation: TConversation
@@ -63,10 +66,24 @@ const ConversationTopic: React.FC<{
               className="text-red-200"
               type="button"
               onClick={() => {
-                setConversations(c =>
-                  c.filter(con => con.id !== conversation.id),
-                )
-                removeKey(conversation.id.toString())
+                ;(async () => {
+                  const token = await (getCookie(
+                    "auth_key",
+                  ) as unknown as Promise<string>)
+                  const resp = await removeChat(token, {
+                    conversation_id: conversation.id,
+                  })
+
+                  if (!resp.ok) {
+                    toast.error(resp.error)
+                    return
+                  }
+
+                  setConversations(c =>
+                    c.filter(con => con.id !== conversation.id),
+                  )
+                  removeKey(conversation.id.toString())
+                })()
               }}
             >
               <Trash />

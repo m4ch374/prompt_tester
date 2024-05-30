@@ -17,3 +17,6 @@ class GenerateChatRequest(BaseModel):
     top_p: Optional[float] = Field(default=1, ge=0, le=1)
     seed: int | None = None
     stream: bool
+
+class DeleteConversationRequest(BaseModel):
+    conversation_id: int

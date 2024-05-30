@@ -54,8 +54,8 @@ const PromptTesterForm: React.FC = () => {
     if (conversations.map(x => x.id).includes(currConversation)) return
 
     console.log(conversations.length)
-    if (!conversations.length) {
-      setConversations(() => [{ id: -1, messages: [] }])
+    if (!conversations.length || currConversation == -1) {
+      setConversations(s => [{ id: -1, messages: [] }, ...s])
       setCurrConversation(-1)
       return
     }
@@ -85,7 +85,7 @@ const PromptTesterForm: React.FC = () => {
       responseContainerRef.current.scrollTop =
         responseContainerRef.current.scrollHeight
     }
-  }, [currResponse, conversations])
+  }, [currResponse, conversations, currConversation])
 
   const formSubmit = useCallback(
     (e: FormEvent) => {

@@ -46,3 +46,5 @@ type TGetChatsResponse = {
 }
 
 export type TGetChats = TEndpoint<void, TGetChatsResponse>
+
+export type TRemoveChat = TEndpoint<{ conversation_id: number }, void>
