@@ -4,7 +4,7 @@ import Link from "next/link"
 import { usePathname } from "next/navigation"
 import React, { useContext, useEffect, useMemo, useState } from "react"
 import { motion } from "framer-motion"
-import hoverContext from "./HoverContext"
+import hoverContext from "../HoverContext"
 
 const SideBarBtn: React.FC<{
   icon: React.ReactNode
@@ -16,26 +16,13 @@ const SideBarBtn: React.FC<{
   const currPath = useMemo(() => pathname === link, [link, pathname])
   const [hovering, setHovering] = useState(false)
 
-  const [allHovers, setAllHovers] = useContext(hoverContext)
+  const { addKey, isSelfHover } = useContext(hoverContext)
 
   useEffect(() => {
-    setAllHovers(s => {
-      return {
-        ...s,
-        [link]: hovering ? "HOVERING" : currPath ? "SELECTED" : "NO_HOVER",
-      }
-    })
-  }, [currPath, hovering, link, setAllHovers])
+    addKey(link, hovering ? "HOVER" : currPath ? "SELECT" : "NONE")
+  }, [addKey, currPath, hovering, link])
 
-  const isCurrHover = useMemo(() => {
-    const noHover = Object.values(allHovers).reduce(
-      (prev, curr) => prev && curr != "HOVERING",
-      true,
-    )
-    return noHover
-      ? allHovers[link] === "SELECTED"
-      : allHovers[link] === "HOVERING"
-  }, [allHovers, link])
+  const isCurrHover = useMemo(() => isSelfHover(link), [isSelfHover, link])
 
   return (
     <Link

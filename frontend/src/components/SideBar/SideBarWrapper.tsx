@@ -8,13 +8,32 @@ import Adjust from "@/icons/Adjust"
 import Film from "@/icons/Film"
 import Bars3 from "@/icons/Bars3"
 import SideBarProfile from "./SideBarProfile"
-import hoverContext, { THover } from "./HoverContext"
+import hoverContext from "../HoverContext"
+import useHoverClick from "@/utils/hooks/UseHoverClick.hook"
+
+const BTN_DATA = [
+  {
+    icon: <Code />,
+    link: "/prompt_tester",
+    title: "Prompt Tester",
+  },
+  {
+    icon: <Adjust />,
+    link: "/dashboard",
+    title: "Dashboard",
+  },
+  {
+    icon: <Film />,
+    link: "/campaign",
+    title: "Campaign",
+  },
+]
 
 const SideBarWrapper: React.FC<{ children: React.ReactNode }> = ({
   children,
 }) => {
   const [collapsed, setCollapsed] = useState(false)
-  const hovers = useState<THover>({})
+  const hovers = useHoverClick(BTN_DATA.map(x => x.link))
 
   return (
     <div className="flex h-screen w-full">
@@ -39,24 +58,15 @@ const SideBarWrapper: React.FC<{ children: React.ReactNode }> = ({
           <hr className="mb-8 h-px w-4/5 place-self-center border-0 bg-gray-400/20" />
           <div className="grid px-2">
             <hoverContext.Provider value={hovers}>
-              <SideBarBtn
-                icon={<Code />}
-                link="/prompt_tester"
-                title="Prompt Tester"
-                collapsed={collapsed}
-              />
-              <SideBarBtn
-                icon={<Adjust />}
-                link="/dashboard"
-                title="Dashboard"
-                collapsed={collapsed}
-              />
-              <SideBarBtn
-                icon={<Film />}
-                link="/campaign"
-                title="Campaign"
-                collapsed={collapsed}
-              />
+              {BTN_DATA.map(x => (
+                <SideBarBtn
+                  key={x.link}
+                  icon={x.icon}
+                  link={x.link}
+                  title={x.title}
+                  collapsed={collapsed}
+                />
+              ))}
             </hoverContext.Provider>
           </div>
         </div>

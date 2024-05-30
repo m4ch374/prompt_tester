@@ -7,8 +7,12 @@ import { getCookie } from "@/utils/actions/cookies.action"
 import toast from "react-hot-toast"
 import promptContext from "../PromptContext"
 import Chat from "@/icons/Chat"
+import hoverContext from "@/components/HoverContext"
+import useHoverClick from "@/utils/hooks/UseHoverClick.hook"
 
 const Conversations: React.FC = () => {
+  const hoverControls = useHoverClick()
+
   const promptCtx = useContext(promptContext)
   const [conversation, setConversation] = promptCtx.conversationsController
 
@@ -38,23 +42,25 @@ const Conversations: React.FC = () => {
   }, [setConversation, setCurrConvo, setLoading])
 
   return (
-    <div className="flex-1 overflow-auto">
-      <div className="flex w-full justify-center">
-        <button
-          type="button"
-          className="my-2 flex w-[90%] justify-center gap-2 rounded-md bg-purple-500 py-1 hover:bg-purple-600"
-          onClick={() => setCurrConvo(-1)}
-        >
-          <Chat />
-          <h1>New</h1>
-        </button>
+    <hoverContext.Provider value={hoverControls}>
+      <div className="flex-1 overflow-auto">
+        <div className="flex w-full justify-center">
+          <button
+            type="button"
+            className="my-2 flex w-[90%] justify-center gap-2 rounded-md bg-purple-500 py-1 hover:bg-purple-600"
+            onClick={() => setCurrConvo(-1)}
+          >
+            <Chat />
+            <h1>New</h1>
+          </button>
+        </div>
+        <div>
+          {conversation.map((c, i) => (
+            <ConversationTopic key={i} conversation={c} />
+          ))}
+        </div>
       </div>
-      <div>
-        {conversation.map((c, i) => (
-          <ConversationTopic key={i} conversation={c} />
-        ))}
-      </div>
-    </div>
+    </hoverContext.Provider>
   )
 }
 

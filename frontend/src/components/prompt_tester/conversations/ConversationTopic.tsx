@@ -1,10 +1,11 @@
 "use client"
 
 import Trash from "@/icons/Trash"
-import React, { useContext, useMemo, useState } from "react"
+import React, { useContext, useEffect, useMemo, useState } from "react"
 import { motion } from "framer-motion"
 import { TConversation } from "@/services/types"
 import promptContext from "../PromptContext"
+import hoverContext from "@/components/HoverContext"
 
 const ConversationTopic: React.FC<{
   conversation: TConversation
@@ -16,19 +17,36 @@ const ConversationTopic: React.FC<{
     return conversation.messages.filter(m => m.role === "user")[0].content
   }, [conversation.messages])
 
-  const conversationPicker =
-    useContext(promptContext).currConversationController[1]
+  const [currConvo, setCurrConvo] =
+    useContext(promptContext).currConversationController
+
+  const { addKey, isSelfHover } = useContext(hoverContext)
+
+  useEffect(() => {
+    addKey(
+      conversation.id.toString(),
+      hover
+        ? "HOVER"
+        : currConvo.toString() === conversation.id.toString()
+          ? "SELECT"
+          : "NONE",
+    )
+  }, [addKey, conversation.id, currConvo, hover])
+
+  const isHighlight = useMemo(() => {
+    return isSelfHover(conversation.id.toString())
+  }, [conversation.id, isSelfHover])
 
   return (
     <div
-      className="relative w-full cursor-pointer text-start text-zinc-400 hover:text-zinc-200"
+      className="relative w-full cursor-pointer text-start text-zinc-300"
       onMouseEnter={() => setHover(true)}
       onMouseLeave={() => setHover(false)}
-      onClick={() => conversationPicker(conversation.id)}
+      onClick={() => setCurrConvo(conversation.id)}
     >
       <h1 className="line-clamp-1 p-1.5 text-lg">{conversationTopic}</h1>
 
-      {hover && (
+      {isHighlight && (
         <motion.div
           layoutId="topic"
           className="absolute left-0 top-0 flex size-full items-center justify-between bg-white/10"
