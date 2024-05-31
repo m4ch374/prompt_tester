@@ -1,7 +1,8 @@
+import NotFound from "@/app/not-found"
 import React from "react"
 
 const Campaign: React.FC = () => {
-  return <h1>hi</h1>
+  return <NotFound />
 }
 
 export default Campaign
