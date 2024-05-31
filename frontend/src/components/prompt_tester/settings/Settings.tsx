@@ -8,6 +8,7 @@ import SelectInput from "./SelectInput"
 import { getCookie } from "@/utils/actions/cookies.action"
 import { getChatSettings } from "@/services/chat.services"
 import toast from "react-hot-toast"
+import { useRouter } from "next/navigation"
 
 const Settings: React.FC = () => {
   const {
@@ -18,6 +19,8 @@ const Settings: React.FC = () => {
     modelController,
     currConversationController,
   } = useContext(promptContext)
+
+  const route = useRouter()
 
   const [seed, setSeed] = seedController
   const [localSeed, setLocalSeed] = useState(seed?.toString() || "")
@@ -49,6 +52,9 @@ const Settings: React.FC = () => {
 
       if (!resp.ok) {
         toast.error(resp.error)
+        if (resp.status === 403) {
+          route.push("/auth")
+        }
         return
       }
 
@@ -62,6 +68,7 @@ const Settings: React.FC = () => {
   }, [
     currConvo,
     defaultSettings,
+    route,
     setMaxTok,
     setModel,
     setSeed,

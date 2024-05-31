@@ -3,7 +3,8 @@ import { TEndpoint } from "@/services/types"
 type Method = "GET" | "POST" | "PUT" | "DELETE"
 
 type ErrorResponse = {
-  detail: { reason: string }
+  detail?: { reason: string }
+  error?: string
 }
 
 // Thy type any is very much needed in this case
@@ -95,6 +96,7 @@ class Fetcher<T extends TEndpoint<any, any>> {
   // response data and an error message if an error occured.
   async newFetchData(): Promise<{
     ok: boolean
+    status: number
     data: T["responseType"]
     error: string
   }> {
@@ -102,11 +104,14 @@ class Fetcher<T extends TEndpoint<any, any>> {
       const res = await fetch(this.baseURL, this.requestConf)
       if (!res.ok) {
         const errObj = (await res.json()) as ErrorResponse
-        console.log(errObj)
         return {
           ok: false,
           data: null,
-          error: errObj.detail.reason || (errObj.detail as unknown as string),
+          status: res.status,
+          error:
+            errObj.detail?.reason ||
+            (errObj?.detail as unknown as string) ||
+            errObj.error!,
         }
       }
 
@@ -115,14 +120,18 @@ class Fetcher<T extends TEndpoint<any, any>> {
         : ((await res.json()) as T["responseType"])
       return {
         ok: true,
+        status: res.status,
         data: resObj,
         error: "",
       }
     } catch (e) {
+      console.log(e)
       return {
         ok: false,
         data: null,
-        error: e as string,
+        status: 500,
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
+        error: (e as any).toString(),
       }
     }
   }

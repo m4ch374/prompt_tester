@@ -1,6 +1,6 @@
 from fastapi import FastAPI, Request
+from fastapi.responses import JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
-from .utils.exceptions import ServerErrorException
 from .routers import auth, profile, chat
 
 app = FastAPI()
@@ -17,10 +17,10 @@ app.add_middleware(
 async def global_exception_handler(request: Request, nxt):
     try:
         res = await nxt(request)
-    except Exception as e:
+    except Exception as e: # pylint: disable=broad-exception-caught
         print(f"Exception occured at {request.url.path}")
         print(e)
-        raise ServerErrorException("Error occurred in server") from e
+        return JSONResponse(status_code=500, content={"reason": "Error occured in server"})
     return res
 
 app.include_router(auth.auth_router)
