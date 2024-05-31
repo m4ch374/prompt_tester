@@ -29,6 +29,6 @@ export const getChatSettings = (
 ) => {
   return Fetcher.init<TGetSettings>("GET", "/chat/settings")
     .withToken(token)
-    .withJsonPaylad(body)
+    .withParams(body)
     .newFetchData()
 }

@@ -6,7 +6,6 @@ from sqlalchemy.orm import Session
 from backend.models.auth import IdTokenJwtPayload
 from backend.models.chat import (GenerateChatRequest,
                                  DeleteConversationRequest,
-                                 GetChatSettingsRequest,
                                  GetChatSettingsResponse)
 from backend.models.database import Conversation, Messages
 from backend.utils.dependency import verify_token, get_db
@@ -155,13 +154,13 @@ def delete_conversation(
 
 @chat_router.get("/settings")
 def get_chat_settings(
-    body: GetChatSettingsRequest,
+    conversation_id: int,
     db: Session = Depends(get_db),
     _: IdTokenJwtPayload = Depends(verify_token)
 ) -> GetChatSettingsResponse:
     try:
         # forgot cascade delete exists
-        convo = select(Conversation).where(Conversation.id == body.conversation_id)
+        convo = select(Conversation).where(Conversation.id == conversation_id)
         convo_res = db.execute(convo).scalar()
         if not convo_res:
             raise BadRequestException("Invalid Conversation")

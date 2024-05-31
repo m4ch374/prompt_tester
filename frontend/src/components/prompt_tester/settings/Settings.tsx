@@ -1,10 +1,13 @@
 "use client"
 
-import React, { useContext, useState } from "react"
+import React, { useCallback, useContext, useEffect, useState } from "react"
 import Tooltip from "./Tooltip"
 import RangeInput from "./RangeInput"
 import promptContext from "../PromptContext"
 import SelectInput from "./SelectInput"
+import { getCookie } from "@/utils/actions/cookies.action"
+import { getChatSettings } from "@/services/chat.services"
+import toast from "react-hot-toast"
 
 const Settings: React.FC = () => {
   const {
@@ -12,10 +15,59 @@ const Settings: React.FC = () => {
     maxTokenController,
     topPController,
     seedController,
+    modelController,
+    currConversationController,
   } = useContext(promptContext)
 
   const [seed, setSeed] = seedController
   const [localSeed, setLocalSeed] = useState(seed?.toString() || "")
+
+  const currConvo = currConversationController[0]
+  const setTmp = temperatureController[1]
+  const setMaxTok = maxTokenController[1]
+  const setTopP = topPController[1]
+  const setModel = modelController[1]
+
+  const defaultSettings = useCallback(() => {
+    setTmp(1)
+    setMaxTok(1024)
+    setTopP(1)
+    setSeed(undefined)
+    setModel("llama3-8b-8192")
+  }, [setMaxTok, setModel, setSeed, setTmp, setTopP])
+
+  useEffect(() => {
+    // default values
+    if (currConvo == -1) {
+      defaultSettings()
+      return
+    }
+
+    ;(async () => {
+      const token = await (getCookie("auth_key") as unknown as Promise<string>)
+      const resp = await getChatSettings(token, { conversation_id: currConvo })
+
+      if (!resp.ok) {
+        toast.error(resp.error)
+        return
+      }
+
+      const { max_tokens, model, seed, temperature, top_p } = resp.data
+      setMaxTok(max_tokens!)
+      setModel(model!)
+      setSeed(seed)
+      setTmp(temperature!)
+      setTopP(top_p!)
+    })()
+  }, [
+    currConvo,
+    defaultSettings,
+    setMaxTok,
+    setModel,
+    setSeed,
+    setTmp,
+    setTopP,
+  ])
 
   return (
     <div className="mx-4">
