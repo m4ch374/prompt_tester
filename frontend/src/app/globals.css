@@ -26,6 +26,47 @@ body {
     rgb(var(--background-start-rgb));
 }
 
+.card::before {
+  background: radial-gradient(
+    800px circle at var(--mouse-x) var(--mouse-y),
+    var(--inner-glow),
+    transparent 40%
+  );
+}
+
+.card::after {
+  background: radial-gradient(
+    400px circle at var(--mouse-x) var(--mouse-y),
+    rgba(255, 255, 255, 0.6),
+    transparent 40%
+  );
+}
+
+#cards:hover > .card::after {
+  opacity: 1;
+}
+
+.custom-shape-divider-bottom-1717129600 {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  overflow: hidden;
+  line-height: 0;
+  transform: rotate(180deg);
+}
+
+.custom-shape-divider-bottom-1717129600 svg {
+  position: relative;
+  display: block;
+  width: calc(100% + 1.3px);
+  height: 184px;
+}
+
+.custom-shape-divider-bottom-1717129600 .shape-fill {
+  fill: #111;
+}
+
 @layer utilities {
   .text-balance {
     text-wrap: balance;
