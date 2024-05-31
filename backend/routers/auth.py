@@ -14,12 +14,11 @@ auth_router = APIRouter(prefix="/auth")
 @auth_router.post("")
 # If i read it correctly fastapi is still concurrent under the hood so i guess this is fine
 def auth(body: AuthRequest, db: Session = Depends(get_db)) -> AuthResponse:
-    env_var = get_dotenv()
     resp = requests.post(
         url="https://oauth2.googleapis.com/token",
         data={
-            "client_id": env_var["GOOGLE_CLIENT_ID"],
-            "client_secret": env_var["GOOGLE_CLIENT_SECRET"],
+            "client_id": get_dotenv("GOOGLE_CLIENT_ID"),
+            "client_secret": get_dotenv("GOOGLE_CLIENT_SECRET"),
             "code": body.access_code,
             "grant_type": "authorization_code",
             "redirect_uri": "http://localhost:3000/auth/callback",
@@ -56,6 +55,6 @@ def auth(body: AuthRequest, db: Session = Depends(get_db)) -> AuthResponse:
         db.close()
 
     # this is cheesy
-    jwt_token = jwt.encode({ "token": data.id_token }, env_var["JWT_TOKEN_STR"])
+    jwt_token = jwt.encode({ "token": data.id_token }, get_dotenv("JWT_TOKEN_STR"))
 
     return { "access_token": jwt_token }

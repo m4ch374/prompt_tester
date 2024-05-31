@@ -4,3 +4,6 @@ requests
 python-dotenv
 pydantic
 pyjwt
+SQLAlchemy
+psycopg2
+groq

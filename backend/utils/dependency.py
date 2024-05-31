@@ -11,7 +11,7 @@ from .exceptions import UnauthorizedException
 from .helpers import get_dotenv
 
 # hmm... probably not the best place to put it
-engine = create_engine(get_dotenv()["DB_URL"])
+engine = create_engine(get_dotenv("DB_URL"))
 SessionLocal = sessionmaker(bind=engine)
 Base.metadata.create_all(bind=engine)
 
@@ -25,11 +25,9 @@ def get_db():
 def verify_token(cred: Annotated[HTTPAuthorizationCredentials, Depends(HTTPBearer())]):
     token = cred.credentials
 
-    env_var = get_dotenv()
-
     # blame everything as jwt issue
     try:
-        content = JWTWrapper(**jwt.decode(token, env_var["JWT_TOKEN_STR"], ["HS256"]))
+        content = JWTWrapper(**jwt.decode(token, get_dotenv("JWT_TOKEN_STR"), ["HS256"]))
         id_token = IdTokenJwtPayload(
             # basically welcoming hackers doing injection attacts
             **jwt.decode(content.token, options={ "verify_signature": False })

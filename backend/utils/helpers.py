@@ -1,5 +1,6 @@
-from dotenv import dotenv_values
+import os
+from dotenv import load_dotenv, find_dotenv
 
-def get_dotenv():
-    values = dotenv_values(".env")
-    return values
+def get_dotenv(key: str):
+    load_dotenv(find_dotenv())
+    return os.environ.get(key)
