@@ -1,6 +1,6 @@
 "use client"
 
-import React, { Dispatch, SetStateAction, useState } from "react"
+import React, { Dispatch, SetStateAction, useEffect, useState } from "react"
 
 const RangeInput: React.FC<{
   title: string
@@ -11,6 +11,10 @@ const RangeInput: React.FC<{
 }> = ({ numberController, title, minNum, maxNum, stepNum }) => {
   const [val, setVal] = numberController
   const [inputVal, setInputVal] = useState(val.toString())
+
+  useEffect(() => {
+    setInputVal(val.toString())
+  }, [val])
 
   return (
     <>
@@ -30,7 +34,6 @@ const RangeInput: React.FC<{
             const evall = isNaN(parsed) ? val : parsed
             const actual = Math.min(Math.max(evall, minNum), maxNum)
             setVal(actual)
-            setInputVal(actual.toString())
           }}
         />
       </div>
@@ -43,7 +46,6 @@ const RangeInput: React.FC<{
         onChange={e => {
           const parsed = parseFloat(e.currentTarget.value)
           setVal(parsed)
-          setInputVal(parsed.toString())
         }}
         className="mb-6 h-2 w-full cursor-pointer appearance-none rounded-lg bg-gray-700"
       />

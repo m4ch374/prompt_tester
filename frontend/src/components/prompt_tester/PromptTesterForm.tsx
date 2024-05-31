@@ -113,7 +113,6 @@ const PromptTesterForm: React.FC = () => {
           conversation_id: currConversation,
           system_message: { role: "system", content: sysMsg },
           user_message: { role: "user", content: usrMsg },
-          stream: true,
           seed: seedController[0],
           model: modelController[0],
           max_tokens: maxTokenController[0],
