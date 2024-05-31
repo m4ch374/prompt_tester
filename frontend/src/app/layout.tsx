@@ -1,8 +1,8 @@
 import type { Metadata } from "next"
 import { Inter } from "next/font/google"
 import "./globals.css"
-import { Toaster } from "react-hot-toast"
 import PageProtector from "@/components/PageProtector"
+import MyToaster from "@/components/MyToaster"
 
 const inter = Inter({ subsets: ["latin"] })
 
@@ -21,15 +21,7 @@ export default function RootLayout({
       <body className={inter.className}>
         <PageProtector>
           {children}
-          <Toaster
-            toastOptions={{
-              position: "bottom-center",
-              style: {
-                background: "#333",
-                color: "white",
-              },
-            }}
-          />
+          <MyToaster />
         </PageProtector>
       </body>
     </html>

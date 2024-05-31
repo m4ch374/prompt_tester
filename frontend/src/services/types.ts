@@ -33,7 +33,6 @@ export type TGenerateChatRequest = {
   max_tokens?: number
   top_p?: number
   seed?: number
-  stream: boolean
 }
 
 export type TGenerateChat = TEndpoint<TGenerateChatRequest, Response>
@@ -50,3 +49,16 @@ type TGetChatsResponse = {
 export type TGetChats = TEndpoint<void, TGetChatsResponse>
 
 export type TRemoveChat = TEndpoint<{ conversation_id: number }, void>
+
+export type TGetSettingsResponse = {
+  model?: TChatModel
+  temperature?: number
+  max_tokens?: number
+  top_p?: number
+  seed?: number
+}
+
+export type TGetSettings = TEndpoint<
+  { conversation_id: number },
+  TGetSettingsResponse
+>
