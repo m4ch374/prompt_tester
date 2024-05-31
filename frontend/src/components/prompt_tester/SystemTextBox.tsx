@@ -8,7 +8,7 @@ const SystemTextBox: React.FC = () => {
 
   return (
     <div className="flex flex-1 flex-col border-t border-zinc-500/40 bg-black text-zinc-200 hover:bg-zinc-900">
-      <label className="m-2">System Message</label>
+      <label className="m-2">System Prompt</label>
       <textarea
         className="flex-1 resize-none bg-transparent p-2 text-zinc-400 outline-none"
         placeholder="Enter message"
