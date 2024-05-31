@@ -44,7 +44,6 @@ def generate_chat(
     token: IdTokenJwtPayload = Depends(verify_token),
     db: Session = Depends(get_db),
 ):
-    env_var = get_dotenv()
 
     try:
         original_messages = get_original_messages(body, db)
@@ -52,7 +51,7 @@ def generate_chat(
         new_messages = get_new_messages(original_sys_msg, body)
 
         # new client instance per request...... I think thats ok
-        client = Groq(api_key=env_var["GROQ_KEY"])
+        client = Groq(api_key=get_dotenv("GROQ_KEY"))
         mychat = client.chat.completions.create(
             messages=[m.to_json() for m in original_messages] + new_messages,
             model=body.model,
