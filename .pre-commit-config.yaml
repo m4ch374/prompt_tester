@@ -1,5 +1,7 @@
 # Config copied from a previous project w/ modifications
 
+exclude: ^.*README\.md$
+
 # default checks
 repos:
 -   repo: https://github.com/pre-commit/pre-commit-hooks

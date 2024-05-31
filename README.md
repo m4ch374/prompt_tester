@@ -4,11 +4,11 @@
 This is the eventual repo for **HeffronAI's** take home assignment.
 
 :warning: Few things to note
-> 1. Frontend
+> 1. Frontend  
 > Even though NextJS uses server compoennts as default, most of the components are still client components to provide better interactivity. e.g. animations
-> 2. Backend
+> 2. Backend  
 > fastapi supports async operations, but definitions are defined as non-async since I am not too aware of the pitfalls of using async, especially when there are database transaction involved.
-> 3. Users
+> 3. Users  
 > System and paid users are the same, since the functionality of both users and the scope of their privildges are the same according to the specs, hence implementations are not present to differenciate them.
 
 ## :notebook: 2. Progress Overview
