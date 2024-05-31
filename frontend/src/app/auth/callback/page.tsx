@@ -27,7 +27,6 @@ const Callback: React.FC = () => {
       abortRef.current = new AbortController()
       console.log("fetching")
       const resp = await auth(code, abortRef.current)
-      console.log(resp)
 
       if (resp.error === SIG_ABRT) return
 
@@ -38,7 +37,7 @@ const Callback: React.FC = () => {
       }
 
       setCookie("auth_key", resp.data.access_token)
-      router.push("/")
+      router.push("/prompt_tester")
     })()
   }, [code, router])
 

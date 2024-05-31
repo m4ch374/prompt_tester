@@ -16,10 +16,13 @@ import promptContext from "./PromptContext"
 import SystemTextBox from "./SystemTextBox"
 import ChatBox from "./chat_box/ChatBox"
 import Settings from "./settings/Settings"
+import { useRouter } from "next/navigation"
 
 // This is a hot dumpster fire mess
 const PromptTesterForm: React.FC = () => {
   const textRef = useRef<HTMLTextAreaElement>(null)
+
+  const router = useRouter()
 
   const [usrMsg, setUsrMsg] = useState("")
 
@@ -123,6 +126,9 @@ const PromptTesterForm: React.FC = () => {
         if (!resp.ok) {
           toast.error(resp.error)
           setResopnding(false)
+          if (resp.status == 403) {
+            router.push("/auth")
+          }
           return
         }
 
@@ -189,6 +195,7 @@ const PromptTesterForm: React.FC = () => {
       maxTokenController,
       modelController,
       responding,
+      router,
       seedController,
       setNewConvo,
       sysMsg,
