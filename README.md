@@ -45,7 +45,7 @@ This is the eventual repo for **HeffronAI's** take home assignment.
 
 * :white_check_mark: **B2.** As a user, I want to be able to load previous chats from past testing sessions, So that I can review past interactions and compare the effects of different prompts and parameter settings on the model’s responses.
 
-* :x: **B3.** As a DevOps engineer, I want to package the application in a container, So that it can be deployed consistently across any environment.
+* :white_check_mark: **B3.** As a DevOps engineer, I want to package the application in a container, So that it can be deployed consistently across any environment.
 
 ## :thinking: 3. Assumptions
 1. Integration with AI models are only up to the selection ***Groq*** provides.
