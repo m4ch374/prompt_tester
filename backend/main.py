@@ -10,7 +10,7 @@ app.add_middleware(
     allow_origins=[
         "http://localhost:3000",
         "https://prompt.henrywan.dev",
-        "https://prompt-tester-lovat.vercel.app/",
+        "https://prompt-tester-lovat.vercel.app",
     ],
     allow_credentials=True,
     allow_methods=["*"],
@@ -21,6 +21,7 @@ app.add_middleware(
 @app.middleware("http")
 async def global_exception_handler(request: Request, nxt):
     try:
+        print("Request origin:", request.headers.get("origin"))  # Add this line
         res = await nxt(request)
     except Exception as e:  # pylint: disable=broad-exception-caught
         print(f"Exception occured at {request.url.path}")
