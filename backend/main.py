@@ -7,25 +7,34 @@ app = FastAPI()
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=[
+        "http://localhost:3000",
+        "https://prompt.henrywan.dev",
+        "https://prompt-tester-lovat.vercel.app/",
+    ],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
+
 @app.middleware("http")
 async def global_exception_handler(request: Request, nxt):
     try:
         res = await nxt(request)
-    except Exception as e: # pylint: disable=broad-exception-caught
+    except Exception as e:  # pylint: disable=broad-exception-caught
         print(f"Exception occured at {request.url.path}")
         print(e)
-        return JSONResponse(status_code=500, content={"reason": "Error occured in server"})
+        return JSONResponse(
+            status_code=500, content={"reason": "Error occured in server"}
+        )
     return res
+
 
 app.include_router(auth.auth_router)
 app.include_router(profile.profile_router)
 app.include_router(chat.chat_router)
+
 
 @app.get("/")
 def read_root():
